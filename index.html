@@ -112,7 +112,8 @@
   .weekday { font-size: 13px; color: var(--color-text-sub); }
   .title { font-size: 30px; font-weight: 800; line-height: 1.1; color: #1f1f1f; letter-spacing: 1px; }
   .version { font-size: 11px; color: var(--color-text-sub); margin-top: 6px; }
-  .age-stage { display: inline-block; font-size: 11px; color: var(--color-primary); background: var(--color-ok-bg); border-radius: var(--radius-pill); padding: 3px 10px; margin-top: 8px; font-weight: 600; align-self: flex-start; }
+  .age-stage { display: inline-block; font-size: 11px; color: var(--color-primary); background: var(--color-ok-bg); border-radius: var(--radius-pill); padding: 3px 10px; margin-top: 6px; font-weight: 600; }
+  .header-right { display: flex; flex-direction: column; align-items: flex-end; }
   .header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
   .day-pill {
     display: flex; align-items: center; gap: 8px; background: var(--bg-card);
@@ -393,8 +394,7 @@
           <span class="weekday" id="dailyWeekday">周三</span>
           <h1 class="title">每日<br>待办</h1>
         </div>
-        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="birthDisplay">出生日期</b><small id="birthDayDisplay">第 1 天</small></div></div>
-        <div class="age-stage" id="birthStage">新生儿期</div>
+        <div class="header-right"><div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="birthDisplay">出生日期</b><small id="birthDayDisplay">第 1 天</small></div></div>        <div class="age-stage" id="birthStage">新生儿期</div></div>
       </div>
 
       <div class="card">
@@ -455,8 +455,7 @@
           <span class="weekday" id="milkWeekday">周三</span>
           <h1 class="title">喂奶<br>记录</h1>
         </div>
-        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="milkBirthDisplay">出生日期</b><small id="milkBirthDayDisplay">第 1 天</small></div></div>
-        <div class="age-stage" id="milkStage">新生儿期</div>
+        <div class="header-right"><div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="milkBirthDisplay">出生日期</b><small id="milkBirthDayDisplay">第 1 天</small></div></div>        <div class="age-stage" id="milkStage">新生儿期</div></div>
       </div>
 
       <div class="card">
@@ -498,8 +497,7 @@
           <span class="weekday" id="poopWeekday">周三</span>
           <h1 class="title">排便<br>记录</h1>
         </div>
-        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="poopBirthDisplay">出生日期</b><small id="poopBirthDayDisplay">第 1 天</small></div></div>
-        <div class="age-stage" id="poopStage">新生儿期</div>
+        <div class="header-right"><div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="poopBirthDisplay">出生日期</b><small id="poopBirthDayDisplay">第 1 天</small></div></div>        <div class="age-stage" id="poopStage">新生儿期</div></div>
       </div>
 
       <div class="card">
@@ -548,8 +546,7 @@
           <span class="weekday" id="sleepWeekday">周三</span>
           <h1 class="title">睡眠<br>记录</h1>
         </div>
-        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="sleepBirthDisplay">出生日期</b><small id="sleepBirthDayDisplay">第 1 天</small></div></div>
-        <div class="age-stage" id="sleepStage">新生儿期</div>
+        <div class="header-right"><div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="sleepBirthDisplay">出生日期</b><small id="sleepBirthDayDisplay">第 1 天</small></div></div>        <div class="age-stage" id="sleepStage">新生儿期</div></div>
       </div>
 
       <div class="card">
@@ -593,8 +590,7 @@
           <span class="weekday" id="growthWeekday">周三</span>
           <h1 class="title">生长<br>记录</h1>
         </div>
-        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="growthBirthDisplay">出生日期</b><small id="growthBirthDayDisplay">第 1 天</small></div></div>
-        <div class="age-stage" id="growthStage">新生儿期</div>
+        <div class="header-right"><div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="growthBirthDisplay">出生日期</b><small id="growthBirthDayDisplay">第 1 天</small></div></div>        <div class="age-stage" id="growthStage">新生儿期</div></div>
       </div>
 
       <div class="card">
@@ -634,8 +630,7 @@
           <span class="weekday" id="healthWeekday">周三</span>
           <h1 class="title">健康<br>记录</h1>
         </div>
-        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="healthBirthDisplay">出生日期</b><small id="healthBirthDayDisplay">第 1 天</small></div></div>
-        <div class="age-stage" id="healthStage">新生儿期</div>
+        <div class="header-right"><div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="healthBirthDisplay">出生日期</b><small id="healthBirthDayDisplay">第 1 天</small></div></div>        <div class="age-stage" id="healthStage">新生儿期</div></div>
       </div>
 
       <div class="card">
@@ -680,8 +675,7 @@
           <span class="weekday" id="vacWeekday">周三</span>
           <h1 class="title">疫苗<br>接种</h1>
         </div>
-        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="vacBirthDisplay">出生日期</b><small id="vacBirthDayDisplay">第 1 天</small></div></div>
-        <div class="age-stage" id="vacStage">新生儿期</div>
+        <div class="header-right"><div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="vacBirthDisplay">出生日期</b><small id="vacBirthDayDisplay">第 1 天</small></div></div>        <div class="age-stage" id="vacStage">新生儿期</div></div>
       </div>
 
       <div class="card">
