@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>育儿记录工作台</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg-page: #eaf3ee;
+    --bg-sidebar: #eaf3ee;
+    --bg-card: #ffffff;
+    --color-primary: #6f9b8a;
+    --color-text-main: #1f1f1f;
+    --color-text-sub: #8a8a8a;
+    --color-text-soft: #b8b8b8;
+    --color-warn-bg: #fce0e0;
+    --color-warn: #e88a8a;
+    --color-ok: #6f9b8a;
+    --color-ok-bg: #e0efe7;
+    --color-icon-inactive: #9a9a9a;
+    --radius-card: 22px;
+    --radius-pill: 999px;
+  }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: #2b2b2b;
+    color: var(--color-text-main);
+    overflow: hidden;
+    font-size: 14px;
+  }
+  .phone {
+    width: 100%; max-width: 430px; height: 100vh; max-height: 932px;
+    margin: 0 auto; background: var(--bg-page);
+    display: flex; position: relative; overflow: hidden;
+  }
+  /* iPad 适配 */
+  @media (min-width: 768px) {
+    .phone { max-width: 768px; max-height: 1024px; border-radius: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); margin-top: 2vh; }
+    .sidebar { width: 110px; padding: 40px 0 40px; }
+    .nav-icon { width: 50px; height: 50px; border-radius: 16px; }
+    .nav-icon svg { width: 26px; height: 26px; }
+    .nav-item { font-size: 14px; gap: 7px; }
+    .main { padding: 24px 28px 120px 10px; }
+    .title { font-size: 40px; }
+    .card { padding: 24px 28px; margin-bottom: 18px; }
+    .card .head .h-icon { width: 46px; height: 46px; }
+    .card .head .h-title { font-size: 20px; }
+    .big-num { font-size: 56px; }
+    .item { padding: 16px; }
+    .fab { width: 64px; height: 64px; right: 28px; bottom: 32px; }
+    .fab svg { width: 28px; height: 28px; }
+    .modal { max-width: 520px; margin: 0 auto; }
+  }
+  /* iPhone 横屏/小屏 */
+  @media (max-width: 360px) {
+    .sidebar { width: 80px; }
+    .title { font-size: 26px; }
+    .main { padding: 12px 12px 100px 4px; }
+  }
+  /* 侧栏 */
+  .sidebar {
+    width: 92px; background: var(--bg-sidebar);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 0 30px; flex-shrink: 0;
+  }
+  /* 宝宝头像 */
+  .baby-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(135deg, #c4d6cb, #a8c4b5);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; margin-bottom: 8px; position: relative;
+    box-shadow: 0 2px 10px rgba(111,155,138,0.25); cursor: pointer;
+    overflow: hidden; background-size: cover; background-position: center;
+  }
+  .baby-avatar svg { width: 30px; height: 30px; fill: #fff; }
+  .baby-avatar.has-img svg { display: none; }
+  .baby-avatar .cam-badge {
+    position: absolute; right: -2px; bottom: -2px;
+    width: 22px; height: 22px; border-radius: 50%; background: #1f1f1f;
+    display: flex; align-items: center; justify-content: center; border: 2px solid #eaf3ee;
+  }
+  .baby-avatar .cam-badge svg { width: 12px; height: 12px; fill: #fff; }
+  .baby-name {
+    font-size: 13px; font-weight: 700; color: #1f1f1f; max-width: 80px;
+    text-align: center; margin-bottom: 20px; cursor: pointer;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .baby-name small { display: block; font-size: 10px; font-weight: 400; color: var(--color-text-sub); margin-top: 2px; }
+  .nav-list { list-style: none; display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    cursor: pointer; color: var(--color-text-sub); font-size: 12px; transition: all .2s;
+  }
+  .nav-icon {
+    width: 44px; height: 44px; border-radius: 14px; background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-icon-inactive); transition: all .25s;
+  }
+  .nav-icon svg { width: 22px; height: 22px; }
+  .nav-item.active .nav-icon { background: #1f1f1f; color: #fff; }
+  .nav-item.active { color: var(--color-text-main); font-weight: 600; }
+
+  /* 主区域 */
+  .main { flex: 1; overflow-y: auto; padding: 16px 16px 110px 6px; scrollbar-width: none; }
+  .main::-webkit-scrollbar { display: none; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; padding: 20px 4px 0; }
+  .weekday { font-size: 13px; color: var(--color-text-sub); }
+  .title { font-size: 30px; font-weight: 800; line-height: 1.1; color: #1f1f1f; letter-spacing: 1px; }
+  .version { font-size: 11px; color: var(--color-text-sub); margin-top: 6px; }
+  .day-pill {
+    display: flex; align-items: center; gap: 8px; background: var(--bg-card);
+    border-radius: var(--radius-pill); padding: 8px 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); cursor: pointer;
+  }
+  .day-pill:hover { background: #f0f6f2; }
+  .day-pill .dot { width: 26px; height: 26px; border-radius: 50%; background: #b5cdc1; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+  .day-pill .label b { display: block; font-weight: 600; font-size: 13px; }
+  .day-pill .label small { color: var(--color-text-sub); font-size: 11px; }
+  .day-pill .label input {
+    border: none; background: transparent; font: inherit; color: var(--color-text-main);
+    font-weight: 600; font-size: 13px; width: 110px; padding: 0; outline: none;
+  }
+
+  .card { background: var(--bg-card); border-radius: var(--radius-card); padding: 18px 20px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.03); }
+  .card .head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .card .head .h-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; }
+  .card .head .h-icon svg { width: 20px; height: 20px; }
+  .card .head .h-title { font-size: 17px; font-weight: 700; }
+  .card .head .h-sub { font-size: 11px; color: var(--color-text-sub); margin-top: 2px; }
+
+  .big-num { font-size: 44px; font-weight: 800; color: #1f1f1f; line-height: 1; letter-spacing: -1px; }
+  .unit { font-size: 16px; color: var(--color-text-sub); font-weight: 500; margin-left: 4px; }
+  .tag { font-size: 12px; padding: 5px 11px; border-radius: var(--radius-pill); font-weight: 500; }
+  .tag-warn { background: var(--color-warn-bg); color: var(--color-warn); }
+  .tag-ok { background: var(--color-ok-bg); color: var(--color-ok); }
+  .tag-info { background: #e8e0f0; color: #7a5fa0; }
+
+  .row-flex { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .sub-label { font-size: 13px; color: var(--color-text-sub); margin-bottom: 4px; }
+  .compare { font-size: 12px; color: var(--color-text-sub); margin-top: 4px; }
+  .compare b { color: var(--color-text-main); font-weight: 600; }
+
+  .progress { height: 9px; background: #d6e4dc; border-radius: var(--radius-pill); margin-top: 16px; position: relative; overflow: hidden; }
+  .progress > i { display: block; height: 100%; background: linear-gradient(90deg, #8fb5a3, #6f9b8a 60%, #5a8675); border-radius: var(--radius-pill); }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-soft); margin-top: 6px; }
+
+  .ref-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-top: 1px solid #f1f1f1; font-size: 13px; }
+  .ref-row .k { color: var(--color-text-sub); }
+  .ref-row .v { font-weight: 600; color: #1f1f1f; text-align: right; max-width: 60%; }
+  .ref-row .v small { display: block; color: var(--color-text-sub); font-weight: 400; font-size: 11px; margin-top: 2px; }
+
+  /* 明细列表项 */
+  .item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: #f6f9f7; border-radius: 14px; margin-bottom: 7px; position: relative;
+  }
+  .item .left-icon { width: 32px; height: 32px; border-radius: 50%; background: #b5cdc1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .item .left-icon svg { width: 14px; height: 14px; fill: #fff; }
+  .item .body { flex: 1; min-width: 0; }
+  .item .top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .item .time { font-size: 15px; font-weight: 700; }
+  .item .sep { color: var(--color-text-soft); font-size: 12px; }
+  .item .type { font-size: 12px; font-weight: 500; }
+  .item .meta { font-size: 11px; color: var(--color-text-sub); margin-top: 2px; line-height: 1.4; }
+  .item .actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .icon-btn {
+    width: 26px; height: 26px; border-radius: 50%; border: none; background: #fff;
+    display: flex; align-items: center; justify-content: center; color: var(--color-text-sub); cursor: pointer; flex-shrink: 0;
+  }
+  .icon-btn svg { width: 13px; height: 13px; }
+  .icon-btn.del { color: #d88; }
+  .icon-btn.del:hover { background: #fce0e0; }
+
+  /* 待办 */
+  .todo-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: #f6f9f7; border-radius: 14px; margin-bottom: 7px;
+  }
+  .checkbox {
+    width: 22px; height: 22px; border-radius: 7px; border: 2px solid #c2d2c9;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; background: #fff;
+    transition: all .2s;
+  }
+  .checkbox.done { background: #6f9b8a; border-color: #6f9b8a; }
+  .checkbox svg { width: 13px; height: 13px; stroke: #fff; stroke-width: 3; fill: none; opacity: 0; }
+  .checkbox.done svg { opacity: 1; }
+  .todo-item .t-body { flex: 1; min-width: 0; }
+  .todo-item .t-title { font-size: 14px; font-weight: 500; }
+  .todo-item.done .t-title { text-decoration: line-through; color: var(--color-text-soft); }
+  .todo-item .t-sub { font-size: 11px; color: var(--color-text-sub); margin-top: 2px; }
+
+  /* 色块 */
+  .color-dot { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); display: inline-block; vertical-align: middle; margin-right: 6px; }
+
+  /* WHO 百分位 */
+  .who-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .who-cell { background: #f6f9f7; border-radius: 14px; padding: 12px; text-align: center; }
+  .who-cell .w-label { font-size: 11px; color: var(--color-text-sub); }
+  .who-cell .w-val { font-size: 20px; font-weight: 700; margin: 4px 0; }
+  .who-cell .w-tag { font-size: 11px; padding: 2px 8px; border-radius: var(--radius-pill); display: inline-block; }
+
+  /* 疫苗 */
+  .vac-item { display: flex; align-items: center; gap: 12px; padding: 13px; background: #f6f9f7; border-radius: 16px; margin-bottom: 9px; }
+  .vac-check {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid #c2d2c9;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; background: #fff; transition: all .2s;
+  }
+  .vac-check.done { background: #6f9b8a; border-color: #6f9b8a; }
+  .vac-check svg { width: 13px; height: 13px; stroke: #fff; stroke-width: 3; fill: none; opacity: 0; }
+  .vac-check.done svg { opacity: 1; }
+  .vac-body { flex: 1; min-width: 0; }
+  .vac-name { font-size: 15px; font-weight: 600; }
+  .vac-meta { font-size: 12px; color: var(--color-text-sub); margin-top: 3px; line-height: 1.4; }
+  .vac-tag { font-size: 11px; padding: 2px 8px; border-radius: var(--radius-pill); }
+  .free { background: #e0efe7; color: #5a8675; }
+  .paid { background: #fff0d8; color: #c98; }
+
+  /* FAB */
+  .fab {
+    position: absolute; right: 20px; bottom: 26px; width: 56px; height: 56px;
+    border-radius: 50%; background: #1f1f1f; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25); cursor: pointer; z-index: 10; transition: transform .15s;
+  }
+  .fab:active { transform: scale(0.92); }
+  .fab svg { width: 25px; height: 25px; }
+
+  .watermark { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: rgba(0,0,0,0.22); letter-spacing: 1px; }
+
+  /* 快捷记录悬浮按钮 */
+  .quick-fab {
+    position: absolute; right: 20px; bottom: 92px; width: 48px; height: 48px;
+    border-radius: 50%; background: #6f9b8a; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 16px rgba(111,155,138,0.4); cursor: pointer; z-index: 11;
+    transition: transform .15s; font-size: 22px; font-weight: 700;
+    animation: pulseFab 2.4s ease-in-out infinite;
+  }
+  .quick-fab:active { transform: scale(0.92); }
+  @keyframes pulseFab { 0%,100%{box-shadow:0 6px 16px rgba(111,155,138,0.4)} 50%{box-shadow:0 6px 22px rgba(111,155,138,0.65)} }
+
+  /* 快捷记录菜单 */
+  .quick-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .quick-mask.show { display: flex; animation: fadeIn .2s; }
+  .quick-sheet {
+    width: 86%; max-width: 340px; background: #fff; border-radius: 22px;
+    padding: 18px 16px 14px; animation: sheetPop .25s ease;
+  }
+  @keyframes sheetPop { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
+  .quick-sheet h3 { font-size: 16px; text-align: center; margin-bottom: 14px; font-weight: 700; }
+  .quick-sheet .hint { font-size: 11px; color: var(--color-text-sub); text-align: center; margin-bottom: 12px; line-height: 1.4; }
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .quick-btn {
+    background: #f6f9f7; border: none; border-radius: 16px; padding: 14px 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
+    font-family: inherit; font-size: 12px; font-weight: 600; color: #1f1f1f; transition: all .15s;
+  }
+  .quick-btn:active { transform: scale(0.94); background: #eaf3ee; }
+  .quick-btn .qb-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; }
+  .quick-btn .qb-icon svg { width: 20px; height: 20px; }
+  .quick-close { width: 100%; padding: 10px; background: #f1f1f1; border: none; border-radius: 12px; font-size: 14px; color: #666; font-family: inherit; cursor: pointer; }
+
+  /* 授权引导条 */
+  .motion-banner {
+    position: absolute; top: 8px; left: 8px; right: 8px;
+    background: #1f1f1f; color: #fff; border-radius: 14px; padding: 10px 14px;
+    font-size: 12px; line-height: 1.4; z-index: 30; display: none; gap: 10px; align-items: center;
+  }
+  .motion-banner.show { display: flex; }
+  .motion-banner .mb-text { flex: 1; }
+  .motion-banner button { background: #6f9b8a; color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; }
+
+  /* 通用弹窗 */
+  .modal-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
+  .modal-mask.show { display: flex; animation: fadeIn .2s; }
+  @keyframes fadeIn { from {opacity: 0} to {opacity: 1} }
+  .modal { width: 100%; background: #fff; border-radius: 24px 24px 0 0; padding: 20px 22px 30px; animation: slideUp .25s ease; max-height: 85vh; overflow-y: auto; }
+  @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
+  .modal h3 { font-size: 17px; margin-bottom: 14px; text-align: center; }
+  .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .form-row label { font-size: 12px; color: var(--color-text-sub); }
+  .form-row input, .form-row select, .form-row textarea {
+    border: 1px solid #e0e0e0; background: #f7f9f8; border-radius: 12px;
+    padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none;
+  }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: var(--color-primary); }
+  .form-row textarea { resize: vertical; min-height: 60px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .btn-cancel { background: #f1f1f1; color: #555; }
+  .btn-ok { background: #1f1f1f; color: #fff; }
+
+  /* 验证码锁屏 */
+  .lock-mask {
+    position: absolute; inset: 0; background: linear-gradient(160deg,#1f2b26,#0f1714);
+    z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 30px; color: #fff;
+  }
+  .lock-mask.hide { display: none; }
+  .lock-logo {
+    width: 72px; height: 72px; border-radius: 22px; background: linear-gradient(135deg,#6f9b8a,#5a8675);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(111,155,138,0.4);
+  }
+  .lock-logo svg { width: 36px; height: 36px; fill: #fff; }
+  .lock-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: 1px; }
+  .lock-sub { font-size: 12px; color: #8fa89a; margin-bottom: 28px; text-align: center; line-height: 1.5; }
+  .lock-form { display: flex; gap: 10px; margin-bottom: 14px; }
+  .lock-input {
+    width: 50px; height: 60px; border: 2px solid #2d4a3e; background: rgba(255,255,255,0.05);
+    border-radius: 14px; text-align: center; font-size: 28px; font-weight: 800; color: #fff;
+    font-family: inherit; outline: none; transition: all .2s;
+  }
+  .lock-input:focus { border-color: #6f9b8a; background: rgba(111,155,138,0.15); }
+  .lock-input.error { border-color: #e88a8a; animation: shake .4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .lock-btn {
+    width: 100%; max-width: 260px; padding: 14px; background: #6f9b8a; color: #fff;
+    border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer;
+    font-family: inherit; margin-top: 4px;
+  }
+  .lock-btn:active { transform: scale(0.97); }
+  .lock-err { color: #e88a8a; font-size: 12px; margin-top: 8px; height: 16px; }
+  .lock-info { position: absolute; bottom: 20px; font-size: 10px; color: #5a6f63; text-align: center; line-height: 1.6; }
+  .lock-info b { color: #8fa89a; }
+
+  .empty { text-align: center; padding: 30px 0; color: var(--color-text-soft); font-size: 13px; }
+  .empty-add {
+    display: block; margin: 16px auto 0; padding: 8px 20px;
+    background: #1f1f1f; color: #fff; border-radius: var(--radius-pill);
+    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+    font-family: inherit;
+  }
+  .section-title { font-size: 14px; font-weight: 700; color: var(--color-text-main); margin: 16px 4px 10px; }
+  .note-box { font-size: 11px; color: var(--color-text-sub); background: #f6f9f7; border-radius: 12px; padding: 10px 12px; line-height: 1.5; margin-top: 8px; }
+  .note-box b { color: var(--color-text-main); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <aside class="sidebar">
+    <div class="baby-avatar" id="babyAvatar" onclick="document.getElementById('avatarInput').click()">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      <div class="cam-badge"><svg viewBox="0 0 24 24"><path d="M9 2L7.17 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2h-3.17L15 2H9zm3 7a3.5 3.5 0 110 7 3.5 3.5 0 010-7z"/></svg></div>
+      <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)">
+    </div>
+    <div class="baby-name" id="babyNameDisplay" onclick="openEditBabyName()">
+      宝宝<small>点击改名</small>
+    </div>
+    <ul class="nav-list">
+      <li class="nav-item active" data-tab="daily">
+        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <span>每日</span>
+      </li>
+      <li class="nav-item" data-tab="milk">
+        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12v2h-1v15a2 2 0 01-2 2H9a2 2 0 01-2-2V5H6V3zm3 2v13h6V5H9z"/></svg></div>
+        <span>喂奶</span>
+      </li>
+      <li class="nav-item" data-tab="poop">
+        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M9 10l3 3 3-3"/></svg></div>
+        <span>排便</span>
+      </li>
+      <li class="nav-item" data-tab="sleep">
+        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+        <span>睡眠</span>
+      </li>
+      <li class="nav-item" data-tab="growth">
+        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg></div>
+        <span>生长</span>
+      </li>
+      <li class="nav-item" data-tab="health">
+        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 11c0 5.5-7 10-7 10z"/></svg></div>
+        <span>健康</span>
+      </li>
+      <li class="nav-item" data-tab="vac">
+        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 4l6 6-9 9-6-6V4h9z"/><path d="M3 21l6-6"/></svg></div>
+        <span>疫苗</span>
+      </li>
+    </ul>
+  </aside>
+
+  <main class="main" id="main">
+    <!-- ============ 每日页 ============ -->
+    <section class="page active" id="page-daily">
+      <div class="header">
+        <div>
+          <span class="weekday" id="dailyWeekday">周三</span>
+          <h1 class="title">每日<br>待办</h1>
+          <div class="version">v1.1 · 新生儿期</div>
+        </div>
+        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="birthDisplay">出生日期</b><small id="birthDayDisplay">第 1 天</small></div></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#6f9b8a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div><div class="h-title">今日待办</div><div class="h-sub" id="todoSummary">0/0 完成</div></div>
+        </div>
+        <div id="todoList"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#f4b5b5"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12v2h-1v15a2 2 0 01-2 2H9a2 2 0 01-2-2V5H6V3z"/></svg></div>
+          <div><div class="h-title">今日喂养</div><div class="h-sub">实时汇总</div></div>
+        </div>
+        <div class="row-flex" style="margin-bottom:10px"><span class="sub-label">今日奶量</span><span><b class="big-num" style="font-size:28px" id="dailyMilkTotal">0</b><span class="unit">ml</span></span></div>
+        <div class="ref-row"><span class="k">次数</span><span class="v" id="dailyMilkTimes">0 次</span></div>
+        <div class="ref-row"><span class="k">母乳/奶粉</span><span class="v" id="dailyMilkSplit">—</span></div>
+        <div class="ref-row"><span class="k">参考</span><span class="v" id="dailyMilkRef">—</span></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#7a89c2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+          <div><div class="h-title">今日睡眠</div><div class="h-sub">总览</div></div>
+        </div>
+        <div class="row-flex" style="margin-bottom:10px"><span class="sub-label">总时长</span><span><b class="big-num" style="font-size:28px" id="dailySleepTotal">0</b><span class="unit">h</span></span></div>
+        <div class="ref-row"><span class="k">次数</span><span class="v" id="dailySleepTimes">0 次</span></div>
+        <div class="ref-row"><span class="k">平均</span><span class="v" id="dailySleepAvg">0h</span></div>
+        <div class="ref-row"><span class="k">参考</span><span class="v" id="dailySleepRef">—</span></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#c4a882"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+          <div><div class="h-title">今日排便</div><div class="h-sub">总览</div></div>
+        </div>
+        <div class="row-flex" style="margin-bottom:10px"><span class="sub-label">排便次数</span><span><b class="big-num" style="font-size:28px" id="dailyPoopCount">0</b><span class="unit">次</span></span></div>
+        <div class="ref-row"><span class="k">纸尿裤更换</span><span class="v" id="dailyDiaperCount">0 次</span></div>
+        <div class="ref-row"><span class="k">参考</span><span class="v" id="dailyPoopRef">—</span></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#e88a8a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 11c0 5.5-7 10-7 10z"/></svg></div>
+          <div><div class="h-title">今日健康</div><div class="h-sub">总览</div></div>
+        </div>
+        <div class="ref-row"><span class="k">体温</span><span class="v" id="dailyHealthTemp">—</span></div>
+        <div class="ref-row"><span class="k">状态</span><span class="v" id="dailyHealthStatus">—</span></div>
+        <div class="ref-row"><span class="k">黄疸值</span><span class="v" id="dailyHealthJaundice">—</span></div>
+      </div>
+    </section>
+
+    <!-- ============ 喂奶页 ============ -->
+    <section class="page" id="page-milk">
+      <div class="header">
+        <div>
+          <span class="weekday" id="milkWeekday">周三</span>
+          <h1 class="title">喂奶<br>记录</h1>
+          <div class="version">v1.1 · 新生儿期</div>
+        </div>
+        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="milkBirthDisplay">出生日期</b><small id="milkBirthDayDisplay">第 1 天</small></div></div>
+      </div>
+
+      <div class="card">
+        <div class="row-flex">
+          <div>
+            <div class="sub-label">今日喂养奶量</div>
+            <div><span class="big-num" id="milkTotal">0</span><span class="unit">ml</span></div>
+            <div class="compare" id="milkCompare"></div>
+          </div>
+          <span class="tag tag-ok" id="milkTag">正常</span>
+        </div>
+        <div class="progress"><i id="milkBar" style="width:0%"></i></div>
+        <div class="progress-labels"><span>0</span><span id="milkRefLabel">参考 —</span></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#f4b5b5"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/></svg></div>
+          <div><div class="h-title">喂养明细</div><div class="h-sub" id="milkDetailSub">0 条记录</div></div>
+        </div>
+        <div id="milkList"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#b8a6d6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg></div>
+          <div><div class="h-title">喂养参考标准（国家）</div><div class="h-sub" id="milkRefSub">按出生天数</div></div>
+        </div>
+        <div id="milkRefRows"></div>
+        <div class="note-box" id="milkRefNote"></div>
+      </div>
+    </section>
+
+    <!-- ============ 排便页 ============ -->
+    <section class="page" id="page-poop">
+      <div class="header">
+        <div>
+          <span class="weekday" id="poopWeekday">周三</span>
+          <h1 class="title">排便<br>记录</h1>
+          <div class="version">v1.1 · 新生儿期</div>
+        </div>
+        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="poopBirthDisplay">出生日期</b><small id="poopBirthDayDisplay">第 1 天</small></div></div>
+      </div>
+
+      <div class="card">
+        <div class="row-flex">
+          <div>
+            <div class="sub-label">今日排便统计</div>
+            <div><span class="big-num" id="poopCount">0</span><span class="unit">次</span></div>
+          </div>
+          <span class="tag tag-ok" id="poopTag">正常</span>
+        </div>
+        <div class="ref-row"><span class="k">纸尿裤更换</span><span class="v" id="diaperCount">0 次</span></div>
+        <div class="ref-row"><span class="k">大便总量(估)</span><span class="v" id="poopTotal">— g</span></div>
+        <div class="ref-row"><span class="k">参考次数</span><span class="v" id="poopRef">—</span></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#c4a882"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+          <div><div class="h-title">大便颜色记录</div><div class="h-sub">母乳/奶粉差异</div></div>
+        </div>
+        <div id="poopColorList"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#8fb5a3"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/></svg></div>
+          <div><div class="h-title">纸尿裤更换明细</div><div class="h-sub" id="diaperSub">0 条</div></div>
+        </div>
+        <div id="diaperList"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#b8a6d6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg></div>
+          <div><div class="h-title">排便参考标准（国家）</div><div class="h-sub">中华医学会儿科指南</div></div>
+        </div>
+        <div class="ref-row"><span class="k">母乳便次数</span><span class="v">2-5 次/日</span></div>
+        <div class="ref-row"><span class="k">奶粉便次数</span><span class="v">1-3 次/日</span></div>
+        <div class="ref-row"><span class="k">胎便排完</span><span class="v">出生 3-4 天内</span></div>
+        <div class="ref-row"><span class="k">纸尿裤更换</span><span class="v">每日 6-8 次或按需</span></div>
+        <div class="note-box"><b>颜色参考：</b>胎便(墨绿)→过渡便(黄绿)→母乳便(金黄糊状)→奶粉便(淡黄成形)。出现白陶土色(胆道问题)、血丝、黑色柏油样需就医。<br><b>数据来源：</b>中华医学会儿科分会《新生儿排便功能评估》、卫健委《0-6岁儿童健康管理规范》。</div>
+      </div>
+    </section>
+
+    <!-- ============ 睡眠页 ============ -->
+    <section class="page" id="page-sleep">
+      <div class="header">
+        <div>
+          <span class="weekday" id="sleepWeekday">周三</span>
+          <h1 class="title">睡眠<br>记录</h1>
+          <div class="version">v1.1 · 新生儿期</div>
+        </div>
+        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="sleepBirthDisplay">出生日期</b><small id="sleepBirthDayDisplay">第 1 天</small></div></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#7a89c2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+          <div><div class="h-title">睡眠统计</div><div class="h-sub">今日</div></div>
+        </div>
+        <div class="who-grid" style="margin-bottom:8px">
+          <div class="who-cell"><div class="w-label">睡眠次数</div><div class="w-val" id="sleepTimes">0</div></div>
+          <div class="who-cell"><div class="w-label">总时长</div><div class="w-val" id="sleepTotal">0h</div></div>
+          <div class="who-cell"><div class="w-label">平均时长</div><div class="w-val" id="sleepAvg">0h</div></div>
+        </div>
+        <div class="ref-row"><span class="k">参考建议</span><span class="v" id="sleepRef">—</span></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#7a89c2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/></svg></div>
+          <div><div class="h-title">睡眠明细</div><div class="h-sub" id="sleepSub">0 条</div></div>
+        </div>
+        <div id="sleepList"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#b8a6d6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9 9H2l5.5 4-2 7L12 16l6.5 4-2-7L22 9h-7z"/></svg></div>
+          <div><div class="h-title">新生儿睡眠建议（国家）</div><div class="h-sub">卫健委/中华儿科指南</div></div>
+        </div>
+        <div class="ref-row"><span class="k">0-1月</span><span class="v">16-20 小时/天</span></div>
+        <div class="ref-row"><span class="k">1-3月</span><span class="v">14-17 小时/天</span></div>
+        <div class="ref-row"><span class="k">4-11月</span><span class="v">12-15 小时/天</span></div>
+        <div class="ref-row"><span class="k">1-2岁</span><span class="v">11-14 小时/天</span></div>
+        <div class="note-box"><b>睡眠安全：</b>仰卧睡姿、硬质床垫、避免柔软物遮挡口鼻、室温 22-24℃、不分房睡便于夜间照护。<br><b>数据来源：</b>卫健委《0-6岁儿童健康管理规范》及中华医学会儿科指南。</div>
+      </div>
+    </section>
+
+    <!-- ============ 生长页 ============ -->
+    <section class="page" id="page-growth">
+      <div class="header">
+        <div>
+          <span class="weekday" id="growthWeekday">周三</span>
+          <h1 class="title">生长<br>记录</h1>
+          <div class="version">v1.1 · 新生儿期</div>
+        </div>
+        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="growthBirthDisplay">出生日期</b><small id="growthBirthDayDisplay">第 1 天</small></div></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#6f9b8a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg></div>
+          <div><div class="h-title">最新测量</div><div class="h-sub" id="growthLatestSub">暂无记录</div></div>
+        </div>
+        <div class="who-grid">
+          <div class="who-cell"><div class="w-label">体重(kg)</div><div class="w-val" id="gWeight">—</div><div class="w-tag tag-info" id="gWeightPct">—</div></div>
+          <div class="who-cell"><div class="w-label">身长(cm)</div><div class="w-val" id="gHeight">—</div><div class="w-tag tag-info" id="gHeightPct">—</div></div>
+          <div class="who-cell"><div class="w-label">头围(cm)</div><div class="w-val" id="gHead">—</div><div class="w-tag tag-info" id="gHeadPct">—</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#f4b5b5"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/></svg></div>
+          <div><div class="h-title">测量记录</div><div class="h-sub" id="growthSub">0 条</div></div>
+        </div>
+        <div id="growthList"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#b8a6d6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg></div>
+          <div><div class="h-title">WHO 百分位评估（国家）</div><div class="h-sub">按当前月龄</div></div>
+        </div>
+        <div id="growthWhoRows"></div>
+        <div class="note-box"><b>WHO 标准来源：</b>WHO Child Growth Standards（2006），中国卫健委《0-6岁儿童生长发育评价标准》。百分位含义：P3-P97 为正常范围，&lt;P3 或 &gt;P97 建议就诊评估。</div>
+      </div>
+    </section>
+
+    <!-- ============ 健康页 ============ -->
+    <section class="page" id="page-health">
+      <div class="header">
+        <div>
+          <span class="weekday" id="healthWeekday">周三</span>
+          <h1 class="title">健康<br>记录</h1>
+          <div class="version">v1.1 · 新生儿期</div>
+        </div>
+        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="healthBirthDisplay">出生日期</b><small id="healthBirthDayDisplay">第 1 天</small></div></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#e88a8a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 11c0 5.5-7 10-7 10z"/></svg></div>
+          <div><div class="h-title">今日健康统计</div><div class="h-sub" id="healthSub">0 条</div></div>
+        </div>
+        <div class="who-grid" style="margin-bottom:8px">
+          <div class="who-cell"><div class="w-label">体温(℃)</div><div class="w-val" id="hTemp">—</div><div class="w-tag" id="hTempTag">—</div></div>
+          <div class="who-cell"><div class="w-label">状态</div><div class="w-val" id="hStatus" style="font-size:15px">—</div><div class="w-tag tag-ok" id="hStatusTag">—</div></div>
+          <div class="who-cell"><div class="w-label">黄疸值</div><div class="w-val" id="hJaundice">—</div><div class="w-tag" id="hJaundiceTag">—</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#e88a8a"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/></svg></div>
+          <div><div class="h-title">健康记录明细</div><div class="h-sub" id="healthDetailSub">0 条</div></div>
+        </div>
+        <div id="healthList"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#b8a6d6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg></div>
+          <div><div class="h-title">健康参考标准（国家）</div><div class="h-sub">体温 + 黄疸</div></div>
+        </div>
+        <div class="ref-row"><span class="k">体温标准</span><span class="v">腋温 36.5-37.5℃<small>&gt;38℃ 发热需就医</small></span></div>
+        <div class="ref-row"><span class="k">黄疸标准-24h内</span><span class="v">≥6 mg/dL (103 μmol/L)</span></div>
+        <div class="ref-row"><span class="k">黄疸标准-48h内</span><span class="v">≥9 mg/dL (154 μmol/L)</span></div>
+        <div class="ref-row"><span class="k">黄疸标准-72h内</span><span class="v">≥12 mg/dL (205 μmol/L)</span></div>
+        <div class="ref-row"><span class="k">黄疸标准->72h</span><span class="v">≥15 mg/dL (257 μmol/L)</span></div>
+        <div class="ref-row"><span class="k">光疗高危</span><span class="v" id="hJaundiceRef">按日龄评估</span></div>
+        <div class="note-box"><b>数据来源：</b>中华医学会儿科分会新生儿学组《新生儿高胆红素血症诊断和专家共识》、卫健委《新生儿疾病筛查技术规范》。经皮黄疸值(TcB)与血清胆红素(TSB)存在差异，高值需血清复核。</div>
+      </div>
+    </section>
+
+    <!-- ============ 疫苗页 ============ -->
+    <section class="page" id="page-vac">
+      <div class="header">
+        <div>
+          <span class="weekday" id="vacWeekday">周三</span>
+          <h1 class="title">疫苗<br>接种</h1>
+          <div class="version">v1.1 · 国家免疫规划</div>
+        </div>
+        <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="vacBirthDisplay">出生日期</b><small id="vacBirthDayDisplay">第 1 天</small></div></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#6f9b8a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div><div class="h-title">接种进度</div><div class="h-sub" id="vacProgress">0/0</div></div>
+        </div>
+        <div class="progress"><i id="vacBar" style="width:0%"></i></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#8fb5a3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 4l6 6-9 9-6-6V4h9z"/><path d="M3 21l6-6"/></svg></div>
+          <div><div class="h-title">免疫规划疫苗</div><div class="h-sub">一类(免费)</div></div>
+        </div>
+        <div id="vacListFree"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#c4a882"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 4l6 6-9 9-6-6V4h9z"/><path d="M3 21l6-6"/></svg></div>
+          <div><div class="h-title">常用自费疫苗</div><div class="h-sub">二类(自愿)</div></div>
+        </div>
+        <div id="vacListPaid"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="h-icon" style="background:#b8a6d6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg></div>
+          <div><div class="h-title">疫苗接种参考（国家）</div><div class="h-sub">免疫规划程序</div></div>
+        </div>
+        <div class="ref-row"><span class="k">一类疫苗</span><span class="v">国家免疫规划，免费<small>入托入学必需</small></span></div>
+        <div class="ref-row"><span class="k">二类疫苗</span><span class="v">自愿接种，自费<small>按需选择</small></span></div>
+        <div class="ref-row"><span class="k">接种间隔</span><span class="v">同类疫苗 ≥28 天</span></div>
+        <div class="ref-row"><span class="k">补种原则</span><span class="v">未种者尽早补种</span></div>
+        <div class="note-box"><b>数据来源：</b>国家卫健委《国家免疫规划疫苗儿童免疫程序表（2021 版）》。接种信息可在「育苗通」或当地疾控查询；自费疫苗价格为各地采购参考价，实际以接种点为准。</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 验证码锁屏 -->
+  <div class="lock-mask" id="lockMask" style="display:none">
+    <div class="lock-logo"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm0 2.2l7 3.1v4.7c0 4.5-3 8.7-7 9.9-4-1.2-7-5.4-7-9.9V6.3l7-3.1z"/></svg></div>
+    <div class="lock-title">育儿记录工作台</div>
+    <div class="lock-sub">首次使用本设备需输入验证码<br>验证成功后永久免验证</div>
+    <div class="lock-form" id="lockForm">
+      <input class="lock-input" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+      <input class="lock-input" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+      <input class="lock-input" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+      <input class="lock-input" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+    </div>
+    <button class="lock-btn" onclick="verifyCode()">验证并进入</button>
+    <div class="lock-err" id="lockErr"></div>
+    <div class="lock-info">
+      <b>设备隔离说明：</b>本设备数据独立存储，不与其他设备共享<br>
+      数据来源：卫健委 / WHO / 中华医学会儿科分会
+    </div>
+  </div>
+
+  <div class="motion-banner" id="motionBanner">
+    <span class="mb-text">背面敲击功能需开启运动传感器，点"开启"后翻动手机或敲击背面即可触发快捷记录</span>
+    <button onclick="enableMotion()">开启</button>
+  </div>
+  <div class="quick-fab" id="quickFab" onclick="openQuickSheet()" title="快捷记录">⚡</div>
+  <div class="fab" id="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+  <div class="watermark">数据来源：卫健委 / WHO / 中华儿科分会</div>
+
+  <!-- 快捷记录菜单 -->
+  <div class="quick-mask" id="quickMask">
+    <div class="quick-sheet">
+      <h3>快捷记录</h3>
+      <div class="hint" id="quickHint">选择记录类型，快速添加</div>
+      <div class="quick-grid">
+        <button class="quick-btn" onclick="quickAdd('feed')">
+          <div class="qb-icon" style="background:#f4b5b5"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12v2h-1v15a2 2 0 01-2 2H9a2 2 0 01-2-2V5H6V3z"/></svg></div>
+          <span>喂奶</span>
+        </button>
+        <button class="quick-btn" onclick="quickAdd('poop')">
+          <div class="qb-icon" style="background:#c4a882"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+          <span>排便</span>
+        </button>
+        <button class="quick-btn" onclick="quickAdd('sleep')">
+          <div class="qb-icon" style="background:#7a89c2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+          <span>睡眠</span>
+        </button>
+      </div>
+      <button class="quick-close" onclick="closeQuickSheet()">取消</button>
+    </div>
+  </div>
+
+  <!-- 通用弹窗 -->
+  <div class="modal-mask" id="modal">
+    <div class="modal">
+      <h3 id="modalTitle">添加</h3>
+      <div id="modalFields"></div>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" id="btnCancel">取消</button>
+        <button class="btn btn-ok" id="btnOk">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   育儿记录工作台 - 多页应用
+   数据持久化：localStorage
+   参考数据来源：卫健委 / WHO / 中华医学会儿科分会
+============================================================ */
+
+// ====== 工具 ======
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,'0');
+const todayStr = () => { const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+const curTimeStr = () => { const d=new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+// ====== 设备指纹 + 数据隔离 ======
+// 用 canvas 指纹 + 随机数 + UA 生成设备唯一标识，配合 localStorage 永久存储
+function genDeviceFingerprint(){
+  // canvas 指纹
+  let canvasFP = '';
+  try {
+    const c = document.createElement('canvas');
+    const ctx = c.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#f60';
+    ctx.fillRect(125,1,62,20);
+    ctx.fillStyle = '#069';
+    ctx.fillText('baby_tracker_2026', 2, 15);
+    canvasFP = c.toDataURL().slice(-32);
+  } catch(e) {}
+  return 'dev_' + canvasFP + '_' + (navigator.userAgent.length % 100) + '_' + (navigator.languages?.join('') || 'zh');
+}
+function getDeviceId(){
+  let id = localStorage.getItem('baby_deviceId');
+  if(!id){
+    // 优先用已有指纹，否则随机
+    id = genDeviceFingerprint();
+    // 追加一个随机段确保唯一
+    id += '_' + Math.random().toString(36).slice(2,10);
+    localStorage.setItem('baby_deviceId', id);
+  }
+  return id;
+}
+const DEVICE_ID = getDeviceId();
+
+// 数据 key 加 deviceId 前缀，实现设备间隔离
+const KEY_PREFIX = 'baby_' + DEVICE_ID + '_';
+const saveJSON = (k,v) => localStorage.setItem(KEY_PREFIX+k, JSON.stringify(v));
+const loadJSON = (k,def) => { try { return JSON.parse(localStorage.getItem(KEY_PREFIX+k)) || def; } catch { return def; } };
+
+// ====== 验证码锁屏 ======
+const VERIFY_CODE = '1179';  // 固定验证码
+function isVerified(){
+  // 同一设备的验证状态也按 deviceId 隔离
+  return localStorage.getItem(KEY_PREFIX+'verified') === '1';
+}
+function verifyCode(){
+  const inputs = document.querySelectorAll('.lock-input');
+  const code = Array.from(inputs).map(i=>i.value).join('');
+  if(code === VERIFY_CODE){
+    localStorage.setItem(KEY_PREFIX+'verified', '1');
+    $('lockMask').style.display = 'none';
+    initApp();
+  } else {
+    $('lockErr').textContent = '验证码错误，请重新输入';
+    inputs.forEach(i=>{ i.value=''; i.classList.add('error'); });
+    setTimeout(()=>inputs.forEach(i=>i.classList.remove('error')), 400);
+    inputs[0].focus();
+  }
+}
+// 自动跳到下一个输入框
+function setupLockInputs(){
+  const inputs = document.querySelectorAll('.lock-input');
+  inputs.forEach((inp, idx) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/[^0-9]/g,'').slice(0,1);
+      if(inp.value && idx < inputs.length-1) inputs[idx+1].focus();
+    });
+    inp.addEventListener('keydown', e => {
+      if(e.key === 'Backspace' && !inp.value && idx > 0) inputs[idx-1].focus();
+      if(e.key === 'Enter') verifyCode();
+    });
+  });
+}
+
+// ====== 启动入口 ======
+function bootApp(){
+  if(isVerified()){
+    // 已验证，直接进入
+    initApp();
+  } else {
+    // 首次访问，显示锁屏
+    $('lockMask').style.display = 'flex';
+    setupLockInputs();
+    setTimeout(()=>document.querySelector('.lock-input')?.focus(), 300);
+  }
+}
+
+// ====== 宝宝出生信息 ======
+let baby = loadJSON('baby', { birthDate: new Date().toISOString().slice(0,10), name:'宝宝' });
+function dayOffset() {
+  const b = new Date(baby.birthDate); const n = new Date(); n.setHours(0,0,0,0); b.setHours(0,0,0,0);
+  return Math.floor((n-b)/86400000) + 1;
+}
+function monthAge() { return Math.max(0, Math.floor(dayOffset()/30)); }
+function updateBirthDisplay(){
+  const day = dayOffset();
+  const pairs = [
+    ['birthDisplay','birthDayDisplay'],['milkBirthDisplay','milkBirthDayDisplay'],
+    ['poopBirthDisplay','poopBirthDayDisplay'],['sleepBirthDisplay','sleepBirthDayDisplay'],
+    ['growthBirthDisplay','growthBirthDayDisplay'],['healthBirthDisplay','healthBirthDayDisplay'],
+    ['vacBirthDisplay','vacBirthDayDisplay']
+  ];
+  pairs.forEach(([a,b])=>{ if($(a)) $(a).textContent = baby.birthDate; if($(b)) $(b).textContent = '第 '+day+' 天'; });
+}
+function openBirthEditor(){
+  openModal('设置出生日期', [
+    {key:'birthDate', label:'出生日期', type:'date', value:baby.birthDate}
+  ], d=>{
+    if(!d.birthDate) return;
+    baby.birthDate = d.birthDate;
+    saveJSON('baby', baby);
+    updateBirthDisplay();
+    renderAll();
+  });
+}
+
+// ====== 宝宝头像与名字 ======
+function renderBabyAvatar(){
+  const av = $('babyAvatar');
+  const nm = $('babyNameDisplay');
+  if(baby.avatar){
+    av.style.backgroundImage = `url(${baby.avatar})`;
+    av.classList.add('has-img');
+  } else {
+    av.style.backgroundImage = '';
+    av.classList.remove('has-img');
+  }
+  nm.innerHTML = (baby.name||'宝宝') + '<small>点击改名</small>';
+}
+function handleAvatarUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 3*1024*1024){ alert('图片过大，请选小于 3MB 的图片'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    // 压缩到 200x200
+    const img = new Image();
+    img.onload = ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width = 200; canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      // 居中裁切
+      const minSide = Math.min(img.width, img.height);
+      const sx = (img.width - minSide)/2;
+      const sy = (img.height - minSide)/2;
+      ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, 200, 200);
+      const data = canvas.toDataURL('image/jpeg', 0.85);
+      baby.avatar = data;
+      saveJSON('baby', baby);
+      renderBabyAvatar();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = ''; // 允许重复选同一张
+}
+function openEditBabyName(){
+  openModal('设置宝宝名字', [
+    {key:'name', label:'宝宝名字', value:baby.name||'', placeholder:'如 小宝/豆豆'},
+    {key:'birthDate', label:'出生日期', type:'date', value:baby.birthDate}
+  ], d=>{
+    if(d.name !== null && d.name !== undefined) baby.name = d.name.trim() || '宝宝';
+    if(d.birthDate) baby.birthDate = d.birthDate;
+    saveJSON('baby', baby);
+    renderBabyAvatar();
+    updateBirthDisplay();
+    renderAll();
+  });
+}
+
+// ====== 各项数据 ======
+let feeds = loadJSON('feeds', [
+  { id:1, time:'03:00', type:'母乳', amount:30, note:'左10min 右10min', date: todayStr() },
+  { id:2, time:'06:30', type:'奶粉', amount:20, note:'5min', date: todayStr() }
+]);
+let poops = loadJSON('poops', []);
+let diapers = loadJSON('diapers', []);
+let sleeps = loadJSON('sleeps', []);
+let growths = loadJSON('growths', []);
+let healths = loadJSON('healths', []);
+let todos = loadJSON('todos', [
+  { id:1, title:'脐带消毒', sub:'每日2次，75%酒精', done:false },
+  { id:2, title:'量体温', sub:'腋温，早晚各1次', done:false },
+  { id:3, title:'观察黄疸', sub:'面颊/躯干皮肤', done:false },
+  { id:4, title:'喂奶', sub:'按需，8-12次/日', done:false }
+]);
+let vacStatus = loadJSON('vacStatus', {});
+
+let nextId = loadJSON('nextId', 100);
+function genId(){ nextId++; saveJSON('nextId',nextId); return nextId; }
+
+// ====== 国家标准参考数据 ======
+// 喂养参考 (中国营养学会《婴幼儿喂养指南》、中华儿科指南)
+const MILK_REF = [
+  { dayMin:1, dayMax:1, perFeed:'7-20ml', perDay:'按需', freq:'8-12次', total:'50-100ml' },
+  { dayMin:2, dayMax:2, perFeed:'20-40ml', perDay:'按需', freq:'8-12次', total:'100-200ml' },
+  { dayMin:3, dayMax:3, perFeed:'30-50ml', perDay:'按需', freq:'8-12次', total:'200-400ml' },
+  { dayMin:4, dayMax:7, perFeed:'50-70ml', perDay:'按需', freq:'8-12次', total:'400-600ml' },
+  { dayMin:8, dayMax:14, perFeed:'60-90ml', perDay:'600-700ml', freq:'8-10次', total:'600-700ml' },
+  { dayMin:15, dayMax:30, perFeed:'90-120ml', perDay:'700ml', freq:'6-8次', total:'600-800ml' },
+  { dayMin:31, dayMax:60, perFeed:'120-150ml', perDay:'700-900ml', freq:'6-8次', total:'700-900ml' },
+  { dayMin:61, dayMax:90, perFeed:'150-180ml', perDay:'800-1000ml', freq:'5-6次', total:'800-1000ml' }
+];
+function milkRefFor(d) { return MILK_REF.find(r => d>=r.dayMin && d<=r.dayMax) || MILK_REF[MILK_REF.length-1]; }
+
+// 新生儿排便参考
+const POOP_REF = { min:2, max:6, note:'母乳便2-5次/日，奶粉便1-3次/日，>6或<1次需关注' };
+
+// 睡眠参考 (卫健委/中华儿科指南)
+const SLEEP_REF = [
+  { ageMin:0, ageMax:30, hours:'16-20', note:'昼夜节律未建立' },
+  { ageMin:31, ageMax:90, hours:'14-17', note:'逐渐建立昼夜节律' },
+  { ageMin:91, ageMax:330, hours:'12-15', note:'夜睡为主+2次小睡' },
+  { ageMin:331, ageMax:730, hours:'11-14', note:'1-2次小睡' }
+];
+function sleepRefFor(day){ return SLEEP_REF.find(r=>day>=r.ageMin&&day<=r.ageMax) || SLEEP_REF[0]; }
+
+// WHO 生长标准 (P3/P50/P97, 0-6月，男女混合近似)
+// 来源: WHO Child Growth Standards (2006) + 中国卫健委0-6岁标准
+const WHO_DATA = {
+  // 月龄: { weight:[P3,P50,P97], height:[P3,P50,P97], head:[P3,P50,P97] }
+  0:  { weight:[2.5,3.2,4.0], height:[46.1,49.9,53.7], head:[32.4,34.2,36.2] },
+  1:  { weight:[3.4,4.5,5.8], height:[51.1,54.7,58.3], head:[35.6,37.3,39.1] },
+  2:  { weight:[4.4,5.6,7.0], height:[54.7,58.4,62.0], head:[37.3,39.1,40.9] },
+  3:  { weight:[5.0,6.4,8.0], height:[57.6,61.4,65.3], head:[38.3,40.1,42.1] },
+  4:  { weight:[5.6,7.0,8.7], height:[59.9,63.9,67.9], head:[39.2,41.0,42.8] },
+  5:  { weight:[6.0,7.5,9.3], height:[61.8,65.9,69.9], head:[39.7,41.6,43.4] },
+  6:  { weight:[6.4,7.9,9.8], height:[63.3,67.6,71.6], head:[40.3,42.2,44.0] }
+};
+function whoFor(month){ return WHO_DATA[Math.min(month,6)] || WHO_DATA[6]; }
+function pctEval(val, arr){
+  if(!val) return { tag:'—', cls:'tag-info' };
+  if(val < arr[0]) return { tag:'<P3', cls:'tag-warn' };
+  if(val > arr[2]) return { tag:'>P97', cls:'tag-warn' };
+  if(val < arr[1]) return { tag:'P3-P50', cls:'tag-ok' };
+  return { tag:'P50-P97', cls:'tag-ok' };
+}
+
+// 黄疸干预标准 (中华医学会新生儿学组)
+const JAUNDICE_THRESH = [
+  { age:'出生24h内', val:'≥6 mg/dL', note:'警惕病理性' },
+  { age:'24-48h', val:'≥9 mg/dL', note:'需光疗评估' },
+  { age:'48-72h', val:'≥12 mg/dL', note:'需光疗' },
+  { age:'>72h', val:'≥15 mg/dL', note:'需光疗/换血评估' }
+];
+function jaundiceEval(val, day){
+  if(!val) return { tag:'—', cls:'tag-info' };
+  if(day<=1) return val>=6 ? {tag:'高危',cls:'tag-warn'} : {tag:'正常',cls:'tag-ok'};
+  if(day<=2) return val>=9 ? {tag:'高危',cls:'tag-warn'} : {tag:'正常',cls:'tag-ok'};
+  if(day<=3) return val>=12 ? {tag:'高危',cls:'tag-warn'} : {tag:'正常',cls:'tag-ok'};
+  return val>=15 ? {tag:'高危',cls:'tag-warn'} : {tag:'正常',cls:'tag-ok'};
+}
+
+// 国家免疫规划疫苗 (卫健委2021版)
+const VACCINES_FREE = [
+  { id:'hbv0', name:'乙肝疫苗(第1剂)', age:'出生时', desc:'预防乙型肝炎', free:true },
+  { id:'bcg', name:'卡介苗', age:'出生时', desc:'预防结核病', free:true },
+  { id:'hbv1', name:'乙肝疫苗(第2剂)', age:'1月龄', desc:'预防乙型肝炎', free:true },
+  { id:'pv1', name:'脊灰疫苗(第1剂)', age:'2月龄', desc:'预防脊髓灰质炎', free:true },
+  { id:'pv2', name:'脊灰疫苗(第2剂)', age:'3月龄', desc:'预防脊髓灰质炎', free:true },
+  { id:'dtap1', name:'百白破(第1剂)', age:'3月龄', desc:'预防百日咳/白喉/破伤风', free:true },
+  { id:'pv3', name:'脊灰疫苗(第3剂)', age:'4月龄', desc:'预防脊髓灰质炎', free:true },
+  { id:'dtap2', name:'百白破(第2剂)', age:'4月龄', desc:'预防百日咳/白喉/破伤风', free:true },
+  { id:'dtap3', name:'百白破(第3剂)', age:'5月龄', desc:'预防百日咳/白喉/破伤风', free:true },
+  { id:'hbv2', name:'乙肝疫苗(第3剂)', age:'6月龄', desc:'预防乙型肝炎', free:true },
+  { id:'a1', name:'A群流脑(第1剂)', age:'6月龄', desc:'预防流行性脑脊髓膜炎', free:true },
+  { id:'a2', name:'A群流脑(第2剂)', age:'9月龄', desc:'预防流行性脑脊髓膜炎', free:true },
+  { id:'mr', name:'麻腮风(第1剂)', age:'8月龄', desc:'预防麻疹/风疹/腮腺炎', free:true },
+  { id:'je1', name:'乙脑疫苗(第1剂)', age:'8月龄', desc:'预防流行性乙型脑炎', free:true },
+  { id:'dtap4', name:'百白破(第4剂)', age:'18月龄', desc:'加强免疫', free:true },
+  { id:'mrm', name:'麻腮风(第2剂)', age:'18月龄', desc:'加强免疫', free:true },
+  { id:'je2', name:'乙脑疫苗(第2剂)', age:'2岁', desc:'加强免疫', free:true },
+  { id:'a3', name:'A+C流脑(第1剂)', age:'3岁', desc:'加强免疫', free:true },
+  { id:'pv4', name:'脊灰疫苗(第4剂)', age:'4岁', desc:'加强免疫', free:true },
+  { id:'dt', name:'白破疫苗', age:'6岁', desc:'加强免疫', free:true },
+  { id:'a4', name:'A+C流脑(第2剂)', age:'6岁', desc:'加强免疫', free:true }
+];
+const VACCINES_PAID = [
+  { id:'rv1', name:'轮状病毒疫苗', age:'6周龄起', desc:'预防轮状病毒腹泻', free:false, price:'约200-300元/剂' },
+  { id:'pcv1', name:'13价肺炎球菌', age:'6周龄起', desc:'预防肺炎链球菌', free:false, price:'约600-800元/剂' },
+  { id:'hib1', name:'Hib疫苗', age:'2月龄', desc:'预防b型流感嗜血杆菌', free:false, price:'约100-200元/剂' },
+  { id:'var1', name:'水痘疫苗', age:'12月龄', desc:'预防水痘', free:false, price:'约150-200元/剂' },
+  { id:'ev71', name:'手足口(EV71)', age:'6月龄', desc:'预防EV71手足口病', free:false, price:'约200-300元/剂' },
+  { id:'flu', name:'流感疫苗', age:'6月龄', desc:'每年接种', free:false, price:'约50-200元/剂' },
+  { id:'pcv2', name:'23价肺炎', age:'2岁', desc:'预防肺炎链球菌', free:false, price:'约200元/剂' },
+  { id:'hpv', name:'HPV疫苗', age:'9岁+', desc:'预防宫颈癌(女)', free:false, price:'约600-1300元/剂' }
+];
+
+// 大便颜色参考
+const POOP_COLORS = {
+  'meconium':  { name:'胎便(墨绿)', color:'#3d4d3a' },
+  'transition':{ name:'过渡便(黄绿)', color:'#9bbf6a' },
+  'breastmilk':{ name:'母乳便(金黄)', color:'#d4b958' },
+  'formula':   { name:'奶粉便(淡黄)', color:'#e8d5a0' },
+  'dark':      { name:'黑色柏油', color:'#1a1a1a' },
+  'white':     { name:'白陶土色', color:'#e8e8d8' },
+  'blood':     { name:'血丝/红色', color:'#c44' }
+};
+
+// ====== Tab 切换 ======
+let currentTab = 'daily';
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.onclick = () => {
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    item.classList.add('active');
+    currentTab = item.dataset.tab;
+    $('page-'+currentTab).classList.add('active');
+    renderAll();
+  };
+});
+
+// ====== 通用弹窗 ======
+const modal = $('modal'), modalFields = $('modalFields'), modalTitle = $('modalTitle');
+let modalCallback = null;
+function openModal(title, fields, cb) {
+  modalTitle.textContent = title;
+  modalFields.innerHTML = fields.map(f => {
+    if(f.type==='select') {
+      return `<div class="form-row"><label>${f.label}</label><select id="f_${f.key}">${f.options.map(o=>`<option value="${o.value}"${o.value===f.value?' selected':''}>${o.label}</option>`).join('')}</select></div>`;
+    }
+    if(f.type==='textarea') {
+      return `<div class="form-row"><label>${f.label}</label><textarea id="f_${f.key}">${f.value||''}</textarea></div>`;
+    }
+    return `<div class="form-row"><label>${f.label}</label><input type="${f.type||'text'}" id="f_${f.key}" value="${f.value||''}" placeholder="${f.placeholder||''}"></div>`;
+  }).join('');
+  modalCallback = cb;
+  modal.classList.add('show');
+}
+function closeModal(){ modal.classList.remove('show'); modalCallback=null; }
+$('btnCancel').onclick = closeModal;
+$('btnOk').onclick = () => {
+  const cb = modalCallback;
+  if(!cb) return;
+  const inputs = modalFields.querySelectorAll('[id^="f_"]');
+  const data = {};
+  inputs.forEach(i => { data[i.id.slice(2)] = i.value; });
+  // 先关闭弹窗，再执行回调，避免回调内再次 openModal 被覆盖
+  modal.classList.remove('show');
+  modalCallback = null;
+  cb(data);
+};
+modal.addEventListener('click', e => { if(e.target===modal) closeModal(); });
+
+// ====== 编辑/删除按钮 ======
+function editBtn(onClick){ return `<button class="icon-btn" onclick="${onClick}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/></svg></button>`; }
+function delBtn(onClick){ return `<button class="icon-btn del" onclick="${onClick}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>`; }
+
+// ====== FAB ======
+$('fab').onclick = () => {
+  const now = new Date();
+  const t = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  if(currentTab==='daily') openAddTodo();
+  else if(currentTab==='milk') openAddFeed(t);
+  else if(currentTab==='poop') openPoopChoice(t);
+  else if(currentTab==='sleep') openAddSleep(t);
+  else if(currentTab==='growth') openAddGrowth();
+  else if(currentTab==='health') openAddHealth(t);
+  else if(currentTab==='vac') openEditVac();
+};
+// 排便页二选一
+function openPoopChoice(t){
+  openModal('添加记录', [
+    {key:'choice', label:'记录类型', type:'select', value:'poop', options:[
+      {value:'poop', label:'排便记录（颜色/量）'},
+      {value:'diaper', label:'纸尿裤更换'}
+    ]}
+  ], d=>{
+    if(d.choice==='poop') openAddPoop(t);
+    else openAddDiaper(t);
+  });
+}
+
+// ============================================================
+// 每日待办
+// ============================================================
+function renderTodos(){
+  const list = $('todoList');
+  if(!todos.length){ list.innerHTML = '<div class="empty">暂无待办<button class="empty-add" onclick="openAddTodo()">+ 添加</button></div>'; }
+  else list.innerHTML = todos.map(t=>`
+    <div class="todo-item ${t.done?'done':''}">
+      <div class="checkbox ${t.done?'done':''}" onclick="toggleTodo(${t.id})"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="t-body"><div class="t-title">${t.title}</div><div class="t-sub">${t.sub||''}</div></div>
+      ${editBtn(`openEditTodo(${t.id})`)}${delBtn(`delTodo(${t.id})`)}
+    </div>`).join('');
+  const done = todos.filter(t=>t.done).length;
+  $('todoSummary').textContent = `${done}/${todos.length} 完成`;
+}
+function toggleTodo(id){ const t=todos.find(x=>x.id===id); if(t){t.done=!t.done; saveJSON('todos',todos); renderTodos(); renderDailyMilk(); } }
+function openAddTodo(){
+  openModal('添加待办', [
+    {key:'title', label:'事项', placeholder:'如：脐带消毒'},
+    {key:'sub', label:'备注', placeholder:'如：每日2次'}
+  ], d=>{ if(!d.title) return; todos.push({id:genId(),title:d.title,sub:d.sub,done:false}); saveJSON('todos',todos); renderTodos(); renderDailyMilk(); });
+}
+function openEditTodo(id){
+  const t=todos.find(x=>x.id===id); if(!t) return;
+  openModal('编辑待办', [
+    {key:'title', label:'事项', value:t.title},
+    {key:'sub', label:'备注', value:t.sub||''}
+  ], d=>{ t.title=d.title; t.sub=d.sub; saveJSON('todos',todos); renderTodos(); });
+}
+function delTodo(id){ if(!confirm('删除该待办？')) return; todos=todos.filter(t=>t.id!==id); saveJSON('todos',todos); renderTodos(); }
+
+// 每日页今日喂养汇总
+function renderDailyMilk(){
+  const day = dayOffset();
+  const ref = milkRefFor(day);
+  const todayFeeds = feeds.filter(f=>f.date===todayStr());
+  const total = todayFeeds.reduce((s,f)=>s+f.amount,0);
+  $('dailyMilkTotal').textContent = total;
+  $('dailyMilkTimes').textContent = todayFeeds.length + ' 次';
+  const bm = todayFeeds.filter(f=>f.type==='母乳').reduce((s,f)=>s+f.amount,0);
+  const fm = todayFeeds.filter(f=>f.type==='奶粉').reduce((s,f)=>s+f.amount,0);
+  $('dailyMilkSplit').textContent = total ? `母乳 ${bm}ml / 奶粉 ${fm}ml` : '—';
+  $('dailyMilkRef').textContent = `参考 ${ref.total}`;
+}
+
+// 每日页其他模块总览
+function renderDailyOverview(){
+  const day = dayOffset();
+  // 睡眠
+  const todaySleeps = sleeps.filter(s=>s.date===todayStr());
+  const sleepTotal = todaySleeps.reduce((s,sl)=>s+parseFloat(sl.hours||0),0);
+  $('dailySleepTotal').textContent = sleepTotal.toFixed(1);
+  $('dailySleepTimes').textContent = todaySleeps.length + ' 次';
+  $('dailySleepAvg').textContent = todaySleeps.length ? (sleepTotal/todaySleeps.length).toFixed(1)+'h' : '0h';
+  const sRef = sleepRefFor(day);
+  $('dailySleepRef').textContent = `参考 ${sRef.hours}h`;
+  // 排便
+  const todayPoops = poops.filter(p=>p.date===todayStr());
+  const todayDiapers = diapers.filter(d=>d.date===todayStr());
+  $('dailyPoopCount').textContent = todayPoops.length;
+  $('dailyDiaperCount').textContent = todayDiapers.length + ' 次';
+  $('dailyPoopRef').textContent = `参考 ${POOP_REF.min}-${POOP_REF.max} 次`;
+  // 健康
+  const todayHealths = healths.filter(h=>h.date===todayStr());
+  const latestH = todayHealths[todayHealths.length-1];
+  if(latestH){
+    $('dailyHealthTemp').textContent = latestH.temp ? latestH.temp+'℃' : '—';
+    $('dailyHealthStatus').textContent = latestH.status || '—';
+    $('dailyHealthJaundice').textContent = latestH.jaundice ? latestH.jaundice+' mg/dL' : '—';
+  } else {
+    $('dailyHealthTemp').textContent = '—';
+    $('dailyHealthStatus').textContent = '—';
+    $('dailyHealthJaundice').textContent = '—';
+  }
+}
+
+// ============================================================
+// 喂奶页
+// ============================================================
+function renderMilk(){
+  const day = dayOffset();
+  const ref = milkRefFor(day);
+  $('milkRefLabel').textContent = `参考 ${ref.total}`;
+  $('milkRefSub').textContent = `出生第${day}天 · ${ref.freq}`;
+
+  const todayFeeds = feeds.filter(f=>f.date===todayStr());
+  const total = todayFeeds.reduce((s,f)=>s+f.amount,0);
+  $('milkTotal').textContent = total;
+  // 参考量取总量的上限数字
+  const refNum = parseInt(ref.total.match(/\d+/g)?.pop() || 800);
+  const pct = Math.min(100, total/refNum*100);
+  $('milkBar').style.width = pct+'%';
+  const tag = $('milkTag');
+  if(total > refNum) { tag.textContent='偏多'; tag.className='tag tag-warn'; }
+  else if(total < refNum*0.6 && total>0) { tag.textContent='偏少'; tag.className='tag tag-warn'; }
+  else { tag.textContent='正常'; tag.className='tag tag-ok'; }
+
+  $('milkCompare').innerHTML = `参考每日 <b>${ref.total}</b>`;
+
+  // 参考标准行
+  $('milkRefRows').innerHTML = `
+    <div class="ref-row"><span class="k">单次奶量</span><span class="v">${ref.perFeed}</span></div>
+    <div class="ref-row"><span class="k">每日总量</span><span class="v">${ref.total}</span></div>
+    <div class="ref-row"><span class="k">喂养次数</span><span class="v">${ref.freq}</span></div>
+    <div class="ref-row"><span class="k">间隔</span><span class="v">按需喂养</span></div>`;
+  $('milkRefNote').innerHTML = `<b>数据来源：</b>中国营养学会《婴幼儿喂养指南(2022)》及中华医学会儿科分会新生儿学组建议。新生儿按需哺乳，避免强迫定量。母乳为主，奶粉需按月龄选择对应段位。`;
+
+  // 明细
+  $('milkDetailSub').textContent = todayFeeds.length + ' 条记录';
+  const list = $('milkList');
+  if(!todayFeeds.length) list.innerHTML = '<div class="empty">今日暂无记录<button class="empty-add" onclick="openAddFeed(\''+curTimeStr()+'\')">+ 添加喂养</button></div>';
+  else list.innerHTML = todayFeeds.map(f=>`
+    <div class="item">
+      <div class="left-icon" style="background:${f.type==='母乳'?'#f4b5b5':'#b8c8e0'}"><svg viewBox="0 0 24 24"><path d="M6 3h12v2h-1v15a2 2 0 01-2 2H9a2 2 0 01-2-2V5H6V3z"/></svg></div>
+      <div class="body">
+        <div class="top"><span class="time">${f.time}</span><span class="sep">·</span><span class="type">${f.type}</span><span class="sep">·</span><span class="type">${f.amount}ml</span></div>
+        ${f.note?`<div class="meta">${f.note}</div>`:''}
+      </div>
+      ${editBtn(`openEditFeed(${f.id})`)}${delBtn(`delFeed(${f.id})`)}
+    </div>`).join('');
+}
+function openAddFeed(t){
+  openModal('添加喂养记录', [
+    {key:'time', label:'时间', type:'time', value:t},
+    {key:'type', label:'类型', type:'select', value:'母乳', options:[{value:'母乳',label:'母乳'},{value:'奶粉',label:'奶粉'},{value:'混合',label:'混合'}]},
+    {key:'amount', label:'奶量(ml)', type:'number', placeholder:'如 30'},
+    {key:'note', label:'备注', placeholder:'如 左10min 右10min'}
+  ], d=>{ if(!d.amount) return; feeds.push({id:genId(),time:d.time,type:d.type,amount:parseInt(d.amount),note:d.note,date:todayStr()}); feeds.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('feeds',feeds); renderMilk(); renderDailyMilk(); renderDailyOverview(); });
+}
+function openEditFeed(id){
+  const f=feeds.find(x=>x.id===id); if(!f) return;
+  openModal('编辑喂养记录', [
+    {key:'time', label:'时间', type:'time', value:f.time},
+    {key:'type', label:'类型', type:'select', value:f.type, options:[{value:'母乳',label:'母乳'},{value:'奶粉',label:'奶粉'},{value:'混合',label:'混合'}]},
+    {key:'amount', label:'奶量(ml)', type:'number', value:f.amount},
+    {key:'note', label:'备注', value:f.note||''}
+  ], d=>{ f.time=d.time; f.type=d.type; f.amount=parseInt(d.amount); f.note=d.note; feeds.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('feeds',feeds); renderMilk(); renderDailyMilk(); });
+}
+function delFeed(id){ if(!confirm('删除该记录？')) return; feeds=feeds.filter(f=>f.id!==id); saveJSON('feeds',feeds); renderMilk(); renderDailyMilk(); renderDailyOverview(); }
+
+// ============================================================
+// 排便页
+// ============================================================
+function renderPoop(){
+  const day = dayOffset();
+  const todayPoops = poops.filter(p=>p.date===todayStr());
+  const todayDiapers = diapers.filter(d=>d.date===todayStr());
+  $('poopCount').textContent = todayPoops.length;
+  $('diaperCount').textContent = todayDiapers.length + ' 次';
+  const totalG = todayPoops.reduce((s,p)=>s+(p.amount||0),0);
+  $('poopTotal').textContent = totalG ? totalG+' g(估)' : '—';
+  $('poopRef').textContent = `${POOP_REF.min}-${POOP_REF.max} 次/日`;
+
+  const tag = $('poopTag');
+  if(todayPoops.length > POOP_REF.max) { tag.textContent='偏多'; tag.className='tag tag-warn'; }
+  else if(todayPoops.length>0 && todayPoops.length < POOP_REF.min) { tag.textContent='偏少'; tag.className='tag tag-warn'; }
+  else { tag.textContent='正常'; tag.className='tag tag-ok'; }
+
+  // 颜色记录
+  const colorList = $('poopColorList');
+  if(!todayPoops.length) colorList.innerHTML = '<div class="empty">暂无颜色记录<button class="empty-add" onclick="openAddPoop(\''+curTimeStr()+'\')">+ 添加排便</button></div>';
+  else colorList.innerHTML = todayPoops.map(p=>{
+    const c = POOP_COLORS[p.color] || {name:p.color, color:'#ccc'};
+    return `<div class="item">
+      <div class="left-icon" style="background:${c.color}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg></div>
+      <div class="body"><div class="top"><span class="time">${p.time}</span><span class="sep">·</span><span class="type">${c.name}</span></div>${p.note?`<div class="meta">${p.note}</div>`:''}</div>
+      ${editBtn(`openEditPoop(${p.id})`)}${delBtn(`delPoop(${p.id})`)}
+    </div>`;
+  }).join('');
+
+  // 纸尿裤
+  $('diaperSub').textContent = todayDiapers.length + ' 条';
+  const dlist = $('diaperList');
+  if(!todayDiapers.length) dlist.innerHTML = '<div class="empty">暂无更换记录<button class="empty-add" onclick="openAddDiaper(\''+curTimeStr()+'\')">+ 添加更换</button></div>';
+  else dlist.innerHTML = todayDiapers.map(d=>`<div class="item">
+    <div class="left-icon"><svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/></svg></div>
+    <div class="body"><div class="top"><span class="time">${d.time}</span><span class="sep">·</span><span class="type">${d.wet?'湿':'干'}${d.dirty?'+便':''}</span></div>${d.note?`<div class="meta">${d.note}</div>`:''}</div>
+    ${editBtn(`openEditDiaper(${d.id})`)}${delBtn(`delDiaper(${d.id})`)}
+  </div>`).join('');
+}
+function openAddPoop(t){
+  const opts = Object.entries(POOP_COLORS).map(([k,v])=>({value:k,label:v.name}));
+  openModal('添加排便记录', [
+    {key:'time', label:'时间', type:'time', value:t},
+    {key:'color', label:'颜色/性状', type:'select', value:'breastmilk', options:opts},
+    {key:'amount', label:'估算量(g)', type:'number', placeholder:'如 10'},
+    {key:'note', label:'备注', placeholder:'如 糊状/水样'}
+  ], d=>{ poops.push({id:genId(),time:d.time,color:d.color,amount:parseInt(d.amount)||0,note:d.note,date:todayStr()}); poops.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('poops',poops); renderPoop(); renderDailyOverview(); });
+}
+function openEditPoop(id){
+  const p=poops.find(x=>x.id===id); if(!p) return;
+  const opts = Object.entries(POOP_COLORS).map(([k,v])=>({value:k,label:v.name}));
+  openModal('编辑排便记录', [
+    {key:'time', label:'时间', type:'time', value:p.time},
+    {key:'color', label:'颜色/性状', type:'select', value:p.color, options:opts},
+    {key:'amount', label:'估算量(g)', type:'number', value:p.amount},
+    {key:'note', label:'备注', value:p.note||''}
+  ], d=>{ p.time=d.time; p.color=d.color; p.amount=parseInt(d.amount)||0; p.note=d.note; poops.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('poops',poops); renderPoop(); });
+}
+function delPoop(id){ if(!confirm('删除该记录？')) return; poops=poops.filter(p=>p.id!==id); saveJSON('poops',poops); renderPoop(); renderDailyOverview(); }
+function openAddDiaper(t){
+  openModal('添加纸尿裤更换', [
+    {key:'time', label:'时间', type:'time', value:t},
+    {key:'wet', label:'是否湿', type:'select', value:'是', options:[{value:'是',label:'湿'},{value:'否',label:'干'}]},
+    {key:'dirty', label:'是否有便', type:'select', value:'否', options:[{value:'是',label:'有便'},{value:'否',label:'无便'}]},
+    {key:'note', label:'备注', placeholder:'如 量多/量少'}
+  ], d=>{ diapers.push({id:genId(),time:d.time,wet:d.wet==='是',dirty:d.dirty==='是',note:d.note,date:todayStr()}); diapers.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('diapers',diapers); renderPoop(); renderDailyOverview(); });
+}
+function openEditDiaper(id){
+  const d=diapers.find(x=>x.id===id); if(!d) return;
+  openModal('编辑更换记录', [
+    {key:'time', label:'时间', type:'time', value:d.time},
+    {key:'wet', label:'是否湿', type:'select', value:d.wet?'是':'否', options:[{value:'是',label:'湿'},{value:'否',label:'干'}]},
+    {key:'dirty', label:'是否有便', type:'select', value:d.dirty?'是':'否', options:[{value:'是',label:'有便'},{value:'否',label:'无便'}]},
+    {key:'note', label:'备注', value:d.note||''}
+  ], d2=>{ d.time=d2.time; d.wet=d2.wet==='是'; d.dirty=d2.dirty==='是'; d.note=d2.note; diapers.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('diapers',diapers); renderPoop(); });
+}
+function delDiaper(id){ if(!confirm('删除该记录？')) return; diapers=diapers.filter(d=>d.id!==id); saveJSON('diapers',diapers); renderPoop(); renderDailyOverview(); }
+
+// ============================================================
+// 睡眠页
+// ============================================================
+function renderSleep(){
+  const day = dayOffset();
+  const todaySleeps = sleeps.filter(s=>s.date===todayStr());
+  const totalH = todaySleeps.reduce((s,sl)=>s+parseFloat(sl.hours||0),0);
+  $('sleepTimes').textContent = todaySleeps.length;
+  $('sleepTotal').textContent = totalH.toFixed(1)+'h';
+  $('sleepAvg').textContent = todaySleeps.length ? (totalH/todaySleeps.length).toFixed(1)+'h' : '0h';
+  const ref = sleepRefFor(day);
+  $('sleepRef').textContent = `${ref.hours} 小时/天 · ${ref.note}`;
+
+  $('sleepSub').textContent = todaySleeps.length + ' 条';
+  const list = $('sleepList');
+  if(!todaySleeps.length) list.innerHTML = '<div class="empty">暂无记录<button class="empty-add" onclick="openAddSleep(\''+curTimeStr()+'\')">+ 添加睡眠</button></div>';
+  else list.innerHTML = todaySleeps.map(s=>`<div class="item">
+    <div class="left-icon" style="background:#7a89c2"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+    <div class="body"><div class="top"><span class="time">${s.start}-${s.end||''}</span><span class="sep">·</span><span class="type">${s.hours}h</span></div>${s.note?`<div class="meta">${s.note}</div>`:''}</div>
+    ${editBtn(`openEditSleep(${s.id})`)}${delBtn(`delSleep(${s.id})`)}
+  </div>`).join('');
+}
+function openAddSleep(t){
+  openModal('添加睡眠记录', [
+    {key:'start', label:'入睡时间', type:'time', value:t},
+    {key:'end', label:'醒来时间', type:'time'},
+    {key:'hours', label:'时长(小时)', type:'number', step:'0.1', placeholder:'如 2.5'},
+    {key:'note', label:'备注', placeholder:'如 安稳/哭闹'}
+  ], d=>{ if(!d.hours) return; sleeps.push({id:genId(),start:d.start,end:d.end,hours:parseFloat(d.hours),note:d.note,date:todayStr()}); sleeps.sort((a,b)=>a.start.localeCompare(b.start)); saveJSON('sleeps',sleeps); renderSleep(); renderDailyOverview(); });
+}
+function openEditSleep(id){
+  const s=sleeps.find(x=>x.id===id); if(!s) return;
+  openModal('编辑睡眠记录', [
+    {key:'start', label:'入睡时间', type:'time', value:s.start},
+    {key:'end', label:'醒来时间', type:'time', value:s.end||''},
+    {key:'hours', label:'时长(小时)', type:'number', step:'0.1', value:s.hours},
+    {key:'note', label:'备注', value:s.note||''}
+  ], d=>{ s.start=d.start; s.end=d.end; s.hours=parseFloat(d.hours); s.note=d.note; sleeps.sort((a,b)=>a.start.localeCompare(b.start)); saveJSON('sleeps',sleeps); renderSleep(); });
+}
+function delSleep(id){ if(!confirm('删除该记录？')) return; sleeps=sleeps.filter(s=>s.id!==id); saveJSON('sleeps',sleeps); renderSleep(); renderDailyOverview(); }
+
+// ============================================================
+// 生长页
+// ============================================================
+function renderGrowth(){
+  const day = dayOffset();
+  const m = monthAge();
+  const who = whoFor(m);
+  // 最新测量
+  const latest = growths[growths.length-1];
+  if(latest){
+    $('growthLatestSub').textContent = latest.date + ' 测量';
+    $('gWeight').textContent = latest.weight||'—';
+    $('gHeight').textContent = latest.height||'—';
+    $('gHead').textContent = latest.head||'—';
+    const wp = pctEval(latest.weight, who.weight);
+    const hp = pctEval(latest.height, who.height);
+    const hp2 = pctEval(latest.head, who.head);
+    $('gWeightPct').textContent = wp.tag; $('gWeightPct').className = 'w-tag '+wp.cls;
+    $('gHeightPct').textContent = hp.tag; $('gHeightPct').className = 'w-tag '+hp.cls;
+    $('gHeadPct').textContent = hp2.tag; $('gHeadPct').className = 'w-tag '+hp2.cls;
+  } else {
+    $('growthLatestSub').textContent = '暂无记录';
+    ['gWeight','gHeight','gHead'].forEach(id=>$(id).textContent='—');
+    ['gWeightPct','gHeightPct','gHeadPct'].forEach(id=>{$(id).textContent='—';$(id).className='w-tag tag-info';});
+  }
+  // WHO 参考行
+  $('growthWhoRows').innerHTML = `
+    <div class="ref-row"><span class="k">月龄</span><span class="v">${m} 月龄</span></div>
+    <div class="ref-row"><span class="k">体重 P3-P50-P97</span><span class="v">${who.weight.join(' / ')} kg</span></div>
+    <div class="ref-row"><span class="k">身长 P3-P50-P97</span><span class="v">${who.height.join(' / ')} cm</span></div>
+    <div class="ref-row"><span class="k">头围 P3-P50-P97</span><span class="v">${who.head.join(' / ')} cm</span></div>`;
+  // 记录列表
+  $('growthSub').textContent = growths.length + ' 条';
+  const list = $('growthList');
+  if(!growths.length) list.innerHTML = '<div class="empty">暂无记录<button class="empty-add" onclick="openAddGrowth()">+ 添加测量</button></div>';
+  else list.innerHTML = growths.slice().reverse().map(g=>`<div class="item">
+    <div class="left-icon" style="background:#6f9b8a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg></div>
+    <div class="body"><div class="top"><span class="time">${g.date}</span></div><div class="meta">体重 ${g.weight||'—'}kg · 身长 ${g.height||'—'}cm · 头围 ${g.head||'—'}cm</div></div>
+    ${editBtn(`openEditGrowth(${g.id})`)}${delBtn(`delGrowth(${g.id})`)}
+  </div>`).join('');
+}
+function openAddGrowth(){
+  openModal('添加测量记录', [
+    {key:'date', label:'日期', type:'date', value:todayStr()},
+    {key:'weight', label:'体重(kg)', type:'number', step:'0.01', placeholder:'如 3.5'},
+    {key:'height', label:'身长(cm)', type:'number', step:'0.1', placeholder:'如 50'},
+    {key:'head', label:'头围(cm)', type:'number', step:'0.1', placeholder:'如 34'}
+  ], d=>{ if(!d.weight&&!d.height&&!d.head) return; growths.push({id:genId(),date:d.date,weight:parseFloat(d.weight)||null,height:parseFloat(d.height)||null,head:parseFloat(d.head)||null}); growths.sort((a,b)=>a.date.localeCompare(b.date)); saveJSON('growths',growths); renderGrowth(); });
+}
+function openEditGrowth(id){
+  const g=growths.find(x=>x.id===id); if(!g) return;
+  openModal('编辑测量记录', [
+    {key:'date', label:'日期', type:'date', value:g.date},
+    {key:'weight', label:'体重(kg)', type:'number', step:'0.01', value:g.weight||''},
+    {key:'height', label:'身长(cm)', type:'number', step:'0.1', value:g.height||''},
+    {key:'head', label:'头围(cm)', type:'number', step:'0.1', value:g.head||''}
+  ], d=>{ g.date=d.date; g.weight=parseFloat(d.weight)||null; g.height=parseFloat(d.height)||null; g.head=parseFloat(d.head)||null; growths.sort((a,b)=>a.date.localeCompare(b.date)); saveJSON('growths',growths); renderGrowth(); });
+}
+function delGrowth(id){ if(!confirm('删除该记录？')) return; growths=growths.filter(g=>g.id!==id); saveJSON('growths',growths); renderGrowth(); }
+
+// ============================================================
+// 健康页
+// ============================================================
+function renderHealth(){
+  const day = dayOffset();
+  const todayHealths = healths.filter(h=>h.date===todayStr());
+  $('healthSub').textContent = todayHealths.length + ' 条';
+  $('healthDetailSub').textContent = todayHealths.length + ' 条';
+  const latest = todayHealths[todayHealths.length-1];
+  if(latest){
+    $('hTemp').textContent = latest.temp||'—';
+    const tempVal = parseFloat(latest.temp);
+    let tempTag = {t:'正常',c:'tag-ok'};
+    if(tempVal>0){ if(tempVal>=38) tempTag={t:'发热',c:'tag-warn'}; else if(tempVal<36.5||tempVal>37.5) tempTag={t:'偏低/高',c:'tag-warn'}; }
+    $('hTempTag').textContent=tempTag.t; $('hTempTag').className='w-tag '+tempTag.c;
+    $('hStatus').textContent = latest.status||'—';
+    $('hStatusTag').textContent = latest.status==='良好'?'正常':(latest.status? '关注':'—');
+    $('hStatusTag').className = 'w-tag '+(latest.status==='良好'?'tag-ok':'tag-warn');
+    $('hJaundice').textContent = latest.jaundice||'—';
+    const jVal = parseFloat(latest.jaundice);
+    const j = jaundiceEval(jVal, day);
+    $('hJaundiceTag').textContent=j.tag; $('hJaundiceTag').className='w-tag '+j.cls;
+  } else {
+    ['hTemp','hStatus','hJaundice'].forEach(id=>$(id).textContent='—');
+    ['hTempTag','hStatusTag','hJaundiceTag'].forEach(id=>{$(id).textContent='—';$(id).className='w-tag tag-info';});
+  }
+  // 黄疸参考
+  const jRef = JAUNDICE_THRESH.find(j=>day<=1?j.age.includes('24h内'):(day<=2?j.age.includes('24-48'):(day<=3?j.age.includes('48-72'):j.age.includes('>72')))) || JAUNDICE_THRESH[3];
+  $('hJaundiceRef').innerHTML = `${jRef.age} ${jRef.val}<small>${jRef.note}</small>`;
+  // 明细
+  const list=$('healthList');
+  if(!todayHealths.length) list.innerHTML='<div class="empty">今日暂无记录<button class="empty-add" onclick="openAddHealth(\''+curTimeStr()+'\')">+ 添加记录</button></div>';
+  else list.innerHTML = todayHealths.map(h=>`<div class="item">
+    <div class="left-icon" style="background:#e88a8a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 11c0 5.5-7 10-7 10z"/></svg></div>
+    <div class="body"><div class="top"><span class="time">${h.time}</span></div><div class="meta">体温 ${h.temp||'—'}℃ · 状态 ${h.status||'—'} · 黄疸 ${h.jaundice||'—'} mg/dL</div></div>
+    ${editBtn(`openEditHealth(${h.id})`)}${delBtn(`delHealth(${h.id})`)}
+  </div>`).join('');
+}
+function openAddHealth(t){
+  openModal('添加健康记录', [
+    {key:'time', label:'时间', type:'time', value:t},
+    {key:'temp', label:'体温(℃)', type:'number', step:'0.1', placeholder:'如 36.8'},
+    {key:'status', label:'状态', type:'select', value:'良好', options:[{value:'良好',label:'良好'},{value:'嗜睡',label:'嗜睡'},{value:'哭闹',label:'哭闹'},{value:'发热',label:'发热'},{value:'其他',label:'其他'}]},
+    {key:'jaundice', label:'黄疸值(mg/dL)', type:'number', step:'0.1', placeholder:'如 5.0'},
+    {key:'note', label:'备注', placeholder:'如 面部黄染'}
+  ], d=>{ healths.push({id:genId(),time:d.time,temp:d.temp,status:d.status,jaundice:d.jaundice,note:d.note,date:todayStr()}); healths.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('healths',healths); renderHealth(); renderDailyOverview(); });
+}
+function openEditHealth(id){
+  const h=healths.find(x=>x.id===id); if(!h) return;
+  openModal('编辑健康记录', [
+    {key:'time', label:'时间', type:'time', value:h.time},
+    {key:'temp', label:'体温(℃)', type:'number', step:'0.1', value:h.temp||''},
+    {key:'status', label:'状态', type:'select', value:h.status, options:[{value:'良好',label:'良好'},{value:'嗜睡',label:'嗜睡'},{value:'哭闹',label:'哭闹'},{value:'发热',label:'发热'},{value:'其他',label:'其他'}]},
+    {key:'jaundice', label:'黄疸值(mg/dL)', type:'number', step:'0.1', value:h.jaundice||''},
+    {key:'note', label:'备注', value:h.note||''}
+  ], d=>{ h.time=d.time; h.temp=d.temp; h.status=d.status; h.jaundice=d.jaundice; h.note=d.note; healths.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('healths',healths); renderHealth(); });
+}
+function delHealth(id){ if(!confirm('删除该记录？')) return; healths=healths.filter(h=>h.id!==id); saveJSON('healths',healths); renderHealth(); renderDailyOverview(); }
+
+// ============================================================
+// 疫苗页
+// ============================================================
+function renderVac(){
+  const day = dayOffset();
+  const freeDone = VACCINES_FREE.filter(v=>vacStatus[v.id]?.done).length;
+  const total = VACCINES_FREE.length;
+  $('vacProgress').textContent = `${freeDone}/${total}`;
+  $('vacBar').style.width = (freeDone/total*100)+'%';
+  $('vacListFree').innerHTML = VACCINES_FREE.map(v=>{
+    const st = vacStatus[v.id] || {};
+    return `<div class="vac-item">
+      <div class="vac-check ${st.done?'done':''}" onclick="toggleVac('${v.id}')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="vac-body">
+        <div class="vac-name">${v.name}</div>
+        <div class="vac-meta">${v.age} · ${v.desc}</div>
+      </div>
+      <span class="vac-tag free">免费</span>
+      ${editBtn(`openEditVac('${v.id}')`)}
+    </div>`;
+  }).join('');
+  $('vacListPaid').innerHTML = VACCINES_PAID.map(v=>{
+    const st = vacStatus[v.id] || {};
+    return `<div class="vac-item">
+      <div class="vac-check ${st.done?'done':''}" onclick="toggleVac('${v.id}')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="vac-body">
+        <div class="vac-name">${v.name}</div>
+        <div class="vac-meta">${v.age} · ${v.desc}${v.price?' · '+v.price:''}</div>
+      </div>
+      <span class="vac-tag paid">自费</span>
+      ${editBtn(`openEditVac('${v.id}')`)}
+    </div>`;
+  }).join('');
+}
+function toggleVac(id){ if(!vacStatus[id]) vacStatus[id]={}; vacStatus[id].done=!vacStatus[id].done; saveJSON('vacStatus',vacStatus); renderVac(); }
+function openEditVac(id){
+  const st = vacStatus[id] || {};
+  // 查找疫苗信息
+  const v = [...VACCINES_FREE, ...VACCINES_PAID].find(x=>x.id===id);
+  openModal('编辑接种信息：'+(v?v.name:''), [
+    {key:'date', label:'接种日期', type:'date', value:st.date||''},
+    {key:'lot', label:'疫苗批号', value:st.lot||''},
+    {key:'site', label:'接种单位', value:st.site||''},
+    {key:'note', label:'备注', value:st.note||''}
+  ], d=>{ if(!vacStatus[id]) vacStatus[id]={}; vacStatus[id].date=d.date; vacStatus[id].lot=d.lot; vacStatus[id].site=d.site; vacStatus[id].note=d.note; saveJSON('vacStatus',vacStatus); renderVac(); });
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+function renderAll(){
+  const wd = ['日','一','二','三','四','五','六'][new Date().getDay()];
+  ['dailyWeekday','milkWeekday','poopWeekday','sleepWeekday','growthWeekday','healthWeekday','vacWeekday'].forEach(id=>{ if($(id)) $(id).textContent = '周'+wd; });
+  updateBirthDisplay();
+  renderTodos(); renderDailyMilk(); renderDailyOverview(); renderMilk(); renderPoop(); renderSleep(); renderGrowth(); renderHealth(); renderVac();
+}
+
+// 应用初始化（验证通过后调用）
+function initApp(){
+  renderBabyAvatar();
+  renderAll();
+  // 初始化事件绑定（Tab切换等已在脚本加载时绑定，无需重复）
+}
+// 启动入口：先验证
+bootApp();
+
+/* ============================================================
+   背面敲击 / 快捷记录
+   - 监听 DeviceMotion 加速度脉冲（近似背面敲击）
+   - 同时支持悬浮 ⚡ 按钮点击触发
+============================================================ */
+const quickMask = $('quickMask');
+let motionEnabled = false;
+
+function openQuickSheet(){
+  // 根据当前所在 Tab 调整提示
+  const tabName = {daily:'每日',milk:'喂奶',poop:'排便',sleep:'睡眠',growth:'生长',health:'健康',vac:'疫苗'}[currentTab] || '';
+  $('quickHint').textContent = '快速添加一条记录（当前在'+tabName+'页）';
+  quickMask.classList.add('show');
+}
+function closeQuickSheet(){ quickMask.classList.remove('show'); }
+quickMask.addEventListener('click', e=>{ if(e.target===quickMask) closeQuickSheet(); });
+
+function quickAdd(type){
+  closeQuickSheet();
+  const t = curTimeStr();
+  if(type==='feed') openAddFeed(t);
+  else if(type==='poop') openPoopChoice(t);
+  else if(type==='sleep') openAddSleep(t);
+}
+
+// ===== DeviceMotion 监听背面敲击 =====
+// 检测三下连续脉冲（间隔 80-400ms 之间算一次有效敲击）
+let lastPulseTime = 0;
+let tapCount = 0;
+let tapResetTimer = null;
+const TAP_THRESHOLD = 12;      // 加速度阈值（m/s² 的合力增量），数值越低越敏感
+const TAP_INTERVAL_MIN = 80;   // 两次敲击最小间隔 ms
+const TAP_INTERVAL_MAX = 500; // 两次敲击最大间隔 ms
+const REQUIRED_TAPS = 3;      // 三下触发
+
+function handleMotion(e){
+  if(!motionEnabled) return;
+  const acc = e.accelerationIncludingGravity || e.acceleration;
+  if(!acc) return;
+  // 计算合力增量
+  const mag = Math.sqrt((acc.x||0)**2 + (acc.y||0)**2 + (acc.z||0)**2);
+  const now = Date.now();
+  // 静态时合力约 9.8（重力），敲击会有尖峰
+  if(mag > 9.8 + TAP_THRESHOLD){
+    if(now - lastPulseTime < TAP_INTERVAL_MIN) return; // 去抖
+    if(now - lastPulseTime > TAP_INTERVAL_MAX){
+      // 间隔太长，重新计数
+      tapCount = 1;
+    } else {
+      tapCount++;
+    }
+    lastPulseTime = now;
+    clearTimeout(tapResetTimer);
+    tapResetTimer = setTimeout(()=>{ tapCount = 0; }, 1200);
+    if(tapCount >= REQUIRED_TAPS){
+      tapCount = 0;
+      // 触感反馈（iOS Safari 支持 navigator.vibrate）
+      if(navigator.vibrate) navigator.vibrate(30);
+      openQuickSheet();
+    }
+  }
+}
+
+async function enableMotion(){
+  // iOS 13+ 需要请求权限
+  if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
+    try {
+      const perm = await DeviceMotionEvent.requestPermission();
+      if(perm === 'granted'){
+        motionEnabled = true;
+        window.addEventListener('devicemotion', handleMotion);
+        $('motionBanner').classList.remove('show');
+        localStorage.setItem(KEY_PREFIX+'motionEnabled','1');
+        // 给一次反馈
+        openQuickSheet();
+      } else {
+        alert('未授权运动传感器，无法启用背面敲击。可使用右下角 ⚡ 按钮快捷记录。');
+      }
+    } catch(err){
+      alert('授权失败：'+err.message+'。可使用右下角 ⚡ 按钮快捷记录。');
+    }
+  } else if(typeof DeviceMotionEvent !== 'undefined'){
+    // Android / 非 iOS 直接监听
+    motionEnabled = true;
+    window.addEventListener('devicemotion', handleMotion);
+    $('motionBanner').classList.remove('show');
+    localStorage.setItem('baby_motionEnabled','1');
+    openQuickSheet();
+  } else {
+    alert('当前设备不支持运动传感器，可使用右下角 ⚡ 按钮快捷记录。');
+  }
+}
+
+// 首次访问显示授权引导
+if(!localStorage.getItem(KEY_PREFIX+'motionEnabled')){
+  setTimeout(()=>{ $('motionBanner').classList.add('show'); }, 1500);
+} else {
+  // 已授权过的，尝试自动启用（Android 可直接，iOS 需用户手势所以会失败——保留 ⚡ 按钮）
+  if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function'){
+    motionEnabled = true;
+    window.addEventListener('devicemotion', handleMotion);
+  }
+}
+
+// URL hash 触发（配合 iOS 捷径：轻点背面 → 打开本站 #quick）
+if(location.hash === '#quick'){
+  setTimeout(openQuickSheet, 300);
+}
+window.addEventListener('hashchange', ()=>{
+  if(location.hash === '#quick'){ openQuickSheet(); history.replaceState(null,'',location.pathname); }
+});
+</script>
+</body>
+</html>
