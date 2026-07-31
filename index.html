@@ -112,6 +112,8 @@
   .weekday { font-size: 13px; color: var(--color-text-sub); }
   .title { font-size: 30px; font-weight: 800; line-height: 1.1; color: #1f1f1f; letter-spacing: 1px; }
   .version { font-size: 11px; color: var(--color-text-sub); margin-top: 6px; }
+  .age-stage { display: inline-block; font-size: 11px; color: var(--color-primary); background: var(--color-ok-bg); border-radius: var(--radius-pill); padding: 3px 10px; margin-top: 8px; font-weight: 600; align-self: flex-start; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
   .day-pill {
     display: flex; align-items: center; gap: 8px; background: var(--bg-card);
     border-radius: var(--radius-pill); padding: 8px 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); cursor: pointer;
@@ -390,9 +392,9 @@
         <div>
           <span class="weekday" id="dailyWeekday">周三</span>
           <h1 class="title">每日<br>待办</h1>
-          <div class="version">v1.1 · 新生儿期</div>
         </div>
         <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="birthDisplay">出生日期</b><small id="birthDayDisplay">第 1 天</small></div></div>
+        <div class="age-stage" id="birthStage">新生儿期</div>
       </div>
 
       <div class="card">
@@ -452,9 +454,9 @@
         <div>
           <span class="weekday" id="milkWeekday">周三</span>
           <h1 class="title">喂奶<br>记录</h1>
-          <div class="version">v1.1 · 新生儿期</div>
         </div>
         <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="milkBirthDisplay">出生日期</b><small id="milkBirthDayDisplay">第 1 天</small></div></div>
+        <div class="age-stage" id="milkStage">新生儿期</div>
       </div>
 
       <div class="card">
@@ -468,6 +470,7 @@
         </div>
         <div class="progress"><i id="milkBar" style="width:0%"></i></div>
         <div class="progress-labels"><span>0</span><span id="milkRefLabel">参考 —</span></div>
+        <div class="ref-row"><span class="k">母乳时长</span><span class="v" id="milkBmDuration">—</span></div>
       </div>
 
       <div class="card">
@@ -494,9 +497,9 @@
         <div>
           <span class="weekday" id="poopWeekday">周三</span>
           <h1 class="title">排便<br>记录</h1>
-          <div class="version">v1.1 · 新生儿期</div>
         </div>
         <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="poopBirthDisplay">出生日期</b><small id="poopBirthDayDisplay">第 1 天</small></div></div>
+        <div class="age-stage" id="poopStage">新生儿期</div>
       </div>
 
       <div class="card">
@@ -531,12 +534,9 @@
       <div class="card">
         <div class="head">
           <div class="h-icon" style="background:#b8a6d6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg></div>
-          <div><div class="h-title">排便参考标准（国家）</div><div class="h-sub">中华医学会儿科指南</div></div>
+          <div><div class="h-title">排便参考标准（国家）</div><div class="h-sub" id="poopRefSub">中华医学会儿科指南</div></div>
         </div>
-        <div class="ref-row"><span class="k">母乳便次数</span><span class="v">2-5 次/日</span></div>
-        <div class="ref-row"><span class="k">奶粉便次数</span><span class="v">1-3 次/日</span></div>
-        <div class="ref-row"><span class="k">胎便排完</span><span class="v">出生 3-4 天内</span></div>
-        <div class="ref-row"><span class="k">纸尿裤更换</span><span class="v">每日 6-8 次或按需</span></div>
+        <div id="poopRefRows"></div>
         <div class="note-box"><b>颜色参考：</b>胎便(墨绿)→过渡便(黄绿)→母乳便(金黄糊状)→奶粉便(淡黄成形)。出现白陶土色(胆道问题)、血丝、黑色柏油样需就医。<br><b>数据来源：</b>中华医学会儿科分会《新生儿排便功能评估》、卫健委《0-6岁儿童健康管理规范》。</div>
       </div>
     </section>
@@ -547,9 +547,9 @@
         <div>
           <span class="weekday" id="sleepWeekday">周三</span>
           <h1 class="title">睡眠<br>记录</h1>
-          <div class="version">v1.1 · 新生儿期</div>
         </div>
         <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="sleepBirthDisplay">出生日期</b><small id="sleepBirthDayDisplay">第 1 天</small></div></div>
+        <div class="age-stage" id="sleepStage">新生儿期</div>
       </div>
 
       <div class="card">
@@ -592,9 +592,9 @@
         <div>
           <span class="weekday" id="growthWeekday">周三</span>
           <h1 class="title">生长<br>记录</h1>
-          <div class="version">v1.1 · 新生儿期</div>
         </div>
         <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="growthBirthDisplay">出生日期</b><small id="growthBirthDayDisplay">第 1 天</small></div></div>
+        <div class="age-stage" id="growthStage">新生儿期</div>
       </div>
 
       <div class="card">
@@ -633,9 +633,9 @@
         <div>
           <span class="weekday" id="healthWeekday">周三</span>
           <h1 class="title">健康<br>记录</h1>
-          <div class="version">v1.1 · 新生儿期</div>
         </div>
         <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="healthBirthDisplay">出生日期</b><small id="healthBirthDayDisplay">第 1 天</small></div></div>
+        <div class="age-stage" id="healthStage">新生儿期</div>
       </div>
 
       <div class="card">
@@ -679,9 +679,9 @@
         <div>
           <span class="weekday" id="vacWeekday">周三</span>
           <h1 class="title">疫苗<br>接种</h1>
-          <div class="version">v1.1 · 国家免疫规划</div>
         </div>
         <div class="day-pill" onclick="openBirthEditor()"><div class="dot">—</div><div class="label"><b id="vacBirthDisplay">出生日期</b><small id="vacBirthDayDisplay">第 1 天</small></div></div>
+        <div class="age-stage" id="vacStage">新生儿期</div>
       </div>
 
       <div class="card">
@@ -889,15 +889,62 @@ function dayOffset() {
   return Math.floor((n-b)/86400000) + 1;
 }
 function monthAge() { return Math.max(0, Math.floor(dayOffset()/30)); }
+
+// 按自然月计算友好展示：出生日为基准，满一个自然月算1个月，满一个自然年算1年
+function formatDayAge(){
+  const b = new Date(baby.birthDate); b.setHours(0,0,0,0);
+  const now = new Date(); now.setHours(0,0,0,0);
+  const totalDays = Math.max(1, Math.floor((now-b)/86400000) + 1);
+  // 自然年月日差
+  let years = now.getFullYear() - b.getFullYear();
+  let months = now.getMonth() - b.getMonth();
+  let days = now.getDate() - b.getDate();
+  if(days < 0){
+    months -= 1;
+    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    days += prevMonth;
+  }
+  if(months < 0){
+    years -= 1;
+    months += 12;
+  }
+  // 不足1个月，按天数
+  if(years === 0 && months === 0) return `出生${totalDays}天啦`;
+  const parts = [];
+  if(years > 0) parts.push(years===1?'一年':years+'年');
+  if(months > 0) parts.push(months===1?'一个月':months+'个月');
+  if(days > 0){
+    parts.push(days+'天');
+    return `出生${parts.join('零')}啦`;
+  }
+  return `出生${parts.join('')}啦`;
+}
+
+// 根据出生天数判断成长阶段
+function ageStage(day){
+  if(day < 0) day = 0;
+  if(day <= 28) return '新生儿期';
+  if(day <= 365) return '婴儿期';       // 1岁内
+  if(day <= 365*3) return '幼儿期';     // 1-3岁
+  if(day <= 365*6) return '学龄前期';   // 3-6岁
+  if(day <= 365*12) return '学龄期';    // 6-12岁
+  return '青春期';
+}
 function updateBirthDisplay(){
   const day = dayOffset();
+  const ageText = formatDayAge();
+  const stage = ageStage(day);
   const pairs = [
-    ['birthDisplay','birthDayDisplay'],['milkBirthDisplay','milkBirthDayDisplay'],
-    ['poopBirthDisplay','poopBirthDayDisplay'],['sleepBirthDisplay','sleepBirthDayDisplay'],
-    ['growthBirthDisplay','growthBirthDayDisplay'],['healthBirthDisplay','healthBirthDayDisplay'],
-    ['vacBirthDisplay','vacBirthDayDisplay']
+    ['birthDisplay','birthDayDisplay','birthStage'],['milkBirthDisplay','milkBirthDayDisplay','milkStage'],
+    ['poopBirthDisplay','poopBirthDayDisplay','poopStage'],['sleepBirthDisplay','sleepBirthDayDisplay','sleepStage'],
+    ['growthBirthDisplay','growthBirthDayDisplay','growthStage'],['healthBirthDisplay','healthBirthDayDisplay','healthStage'],
+    ['vacBirthDisplay','vacBirthDayDisplay','vacStage']
   ];
-  pairs.forEach(([a,b])=>{ if($(a)) $(a).textContent = baby.birthDate; if($(b)) $(b).textContent = '第 '+day+' 天'; });
+  pairs.forEach(([a,b,c])=>{
+    if($(a)) $(a).textContent = baby.birthDate;
+    if($(b)) $(b).textContent = ageText;
+    if($(c)) $(c).textContent = stage;
+  });
 }
 function openBirthEditor(){
   openModal('设置出生日期', [
@@ -967,8 +1014,8 @@ function openEditBabyName(){
 
 // ====== 各项数据 ======
 let feeds = loadJSON('feeds', [
-  { id:1, time:'03:00', type:'母乳', amount:30, note:'左10min 右10min', date: todayStr() },
-  { id:2, time:'06:30', type:'奶粉', amount:20, note:'5min', date: todayStr() }
+  { id:1, time:'03:00', type:'母乳', amount:0, side:'双侧', duration:20, note:'左10min 右10min', date: todayStr() },
+  { id:2, time:'06:30', type:'奶粉', amount:20, side:'', duration:0, note:'5min', date: todayStr() }
 ]);
 let poops = loadJSON('poops', []);
 let diapers = loadJSON('diapers', []);
@@ -1000,7 +1047,19 @@ const MILK_REF = [
 ];
 function milkRefFor(d) { return MILK_REF.find(r => d>=r.dayMin && d<=r.dayMax) || MILK_REF[MILK_REF.length-1]; }
 
-// 新生儿排便参考
+// 新生儿排便参考（按日龄分段，中华医学会儿科指南）
+const POOP_REF_BY_DAY = [
+  { dayMax:1, min:1, max:4, desc:'胎便期(墨绿)', note:'出生24h内应有胎便，若48h无便需就医' },
+  { dayMax:3, min:3, max:6, desc:'过渡便(黄绿)', note:'胎便逐渐排完，转向黄色便' },
+  { dayMax:7, min:3, max:6, desc:'母乳/奶粉便', note:'母乳便2-5次/日，奶粉便1-3次/日' },
+  { dayMax:30, min:2, max:6, desc:'常规期', note:'次数个体差异大，关注性状' },
+  { dayMax:90, min:1, max:5, desc:'常规期', note:'逐步规律' },
+  { dayMax:365, min:1, max:4, desc:'常规期', note:'辅食添加后成形' }
+];
+function poopRefFor(day){
+  return POOP_REF_BY_DAY.find(r => day <= r.dayMax) || POOP_REF_BY_DAY[POOP_REF_BY_DAY.length-1];
+}
+// 兼容旧引用
 const POOP_REF = { min:2, max:6, note:'母乳便2-5次/日，奶粉便1-3次/日，>6或<1次需关注' };
 
 // 睡眠参考 (卫健委/中华儿科指南)
@@ -1012,7 +1071,7 @@ const SLEEP_REF = [
 ];
 function sleepRefFor(day){ return SLEEP_REF.find(r=>day>=r.ageMin&&day<=r.ageMax) || SLEEP_REF[0]; }
 
-// WHO 生长标准 (P3/P50/P97, 0-6月，男女混合近似)
+// WHO 生长标准 (P3/P50/P97, 0-24月，男女混合近似)
 // 来源: WHO Child Growth Standards (2006) + 中国卫健委0-6岁标准
 const WHO_DATA = {
   // 月龄: { weight:[P3,P50,P97], height:[P3,P50,P97], head:[P3,P50,P97] }
@@ -1022,9 +1081,20 @@ const WHO_DATA = {
   3:  { weight:[5.0,6.4,8.0], height:[57.6,61.4,65.3], head:[38.3,40.1,42.1] },
   4:  { weight:[5.6,7.0,8.7], height:[59.9,63.9,67.9], head:[39.2,41.0,42.8] },
   5:  { weight:[6.0,7.5,9.3], height:[61.8,65.9,69.9], head:[39.7,41.6,43.4] },
-  6:  { weight:[6.4,7.9,9.8], height:[63.3,67.6,71.6], head:[40.3,42.2,44.0] }
+  6:  { weight:[6.4,7.9,9.8], height:[63.3,67.6,71.6], head:[40.3,42.2,44.0] },
+  9:  { weight:[7.1,8.9,11.0], height:[67.5,72.0,76.5], head:[41.5,43.5,45.6] },
+  12: { weight:[7.7,9.6,12.0], height:[71.0,75.7,80.5], head:[42.4,44.5,46.6] },
+  15: { weight:[8.3,10.3,12.8], height:[74.0,78.8,83.7], head:[43.0,45.1,47.2] },
+  18: { weight:[8.8,10.9,13.5], height:[76.8,81.7,86.7], head:[43.5,45.6,47.7] },
+  24: { weight:[9.7,12.2,15.3], height:[81.7,87.1,92.4], head:[44.3,46.5,48.7] }
 };
-function whoFor(month){ return WHO_DATA[Math.min(month,6)] || WHO_DATA[6]; }
+function whoFor(month){
+  // 找不超过当前月龄的最近一档
+  const keys = Object.keys(WHO_DATA).map(Number).sort((a,b)=>a-b);
+  let found = keys[0];
+  for(const k of keys){ if(k <= month) found = k; }
+  return WHO_DATA[found];
+}
 function pctEval(val, arr){
   if(!val) return { tag:'—', cls:'tag-info' };
   if(val < arr[0]) return { tag:'<P3', cls:'tag-warn' };
@@ -1113,14 +1183,29 @@ let modalCallback = null;
 function openModal(title, fields, cb) {
   modalTitle.textContent = title;
   modalFields.innerHTML = fields.map(f => {
+    const showIfAttr = f.showIf ? ` data-show-if="${f.showIf.key}" data-show-val="${f.showIf.val}"` : '';
+    const hiddenStyle = f.showIf ? ' style="display:none"' : '';
     if(f.type==='select') {
-      return `<div class="form-row"><label>${f.label}</label><select id="f_${f.key}">${f.options.map(o=>`<option value="${o.value}"${o.value===f.value?' selected':''}>${o.label}</option>`).join('')}</select></div>`;
+      return `<div class="form-row"${showIfAttr}${hiddenStyle}><label>${f.label}</label><select id="f_${f.key}"${f.onInput?` oninput="${f.onInput}"`:''}>${f.options.map(o=>`<option value="${o.value}"${o.value===f.value?' selected':''}>${o.label}</option>`).join('')}</select></div>`;
     }
     if(f.type==='textarea') {
-      return `<div class="form-row"><label>${f.label}</label><textarea id="f_${f.key}">${f.value||''}</textarea></div>`;
+      return `<div class="form-row"${showIfAttr}${hiddenStyle}><label>${f.label}</label><textarea id="f_${f.key}">${f.value||''}</textarea></div>`;
     }
-    return `<div class="form-row"><label>${f.label}</label><input type="${f.type||'text'}" id="f_${f.key}" value="${f.value||''}" placeholder="${f.placeholder||''}"></div>`;
+    return `<div class="form-row"${showIfAttr}${hiddenStyle}><label>${f.label}</label><input type="${f.type||'text'}" id="f_${f.key}" value="${f.value||''}" placeholder="${f.placeholder||''}"${f.readonly?' readonly':''}></div>`;
   }).join('');
+  // 绑定 showIf 联动：监听被依赖的 select，控制依赖字段的显隐
+  const showIfKeys = [...new Set(fields.filter(f=>f.showIf).map(f=>f.showIf.key))];
+  showIfKeys.forEach(key => {
+    const ctrl = $('f_' + key);
+    if(!ctrl) return;
+    const apply = () => {
+      modalFields.querySelectorAll(`[data-show-if="${key}"]`).forEach(row => {
+        row.style.display = (ctrl.value === row.dataset.showVal) ? '' : 'none';
+      });
+    };
+    ctrl.addEventListener('change', apply);
+    apply(); // 初始化
+  });
   modalCallback = cb;
   modal.classList.add('show');
 }
@@ -1204,12 +1289,21 @@ function renderDailyMilk(){
   const day = dayOffset();
   const ref = milkRefFor(day);
   const todayFeeds = feeds.filter(f=>f.date===todayStr());
-  const total = todayFeeds.reduce((s,f)=>s+f.amount,0);
+  const formulaFeeds = todayFeeds.filter(f=>f.type!=='母乳');
+  const bmFeeds = todayFeeds.filter(f=>f.type==='母乳');
+  const total = formulaFeeds.reduce((s,f)=>s+f.amount,0);
+  const bmTotalMin = bmFeeds.reduce((s,f)=>s+parseInt(f.duration||0),0);
   $('dailyMilkTotal').textContent = total;
   $('dailyMilkTimes').textContent = todayFeeds.length + ' 次';
-  const bm = todayFeeds.filter(f=>f.type==='母乳').reduce((s,f)=>s+f.amount,0);
   const fm = todayFeeds.filter(f=>f.type==='奶粉').reduce((s,f)=>s+f.amount,0);
-  $('dailyMilkSplit').textContent = total ? `母乳 ${bm}ml / 奶粉 ${fm}ml` : '—';
+  const mix = todayFeeds.filter(f=>f.type==='混合').reduce((s,f)=>s+f.amount,0);
+  let splitText = '—';
+  const parts = [];
+  if(bmFeeds.length) parts.push(`母乳 ${bmFeeds.length}次/${bmTotalMin}min`);
+  if(fm) parts.push(`奶粉 ${fm}ml`);
+  if(mix) parts.push(`混合 ${mix}ml`);
+  if(parts.length) splitText = parts.join(' / ');
+  $('dailyMilkSplit').textContent = splitText;
   $('dailyMilkRef').textContent = `参考 ${ref.total}`;
 }
 
@@ -1227,9 +1321,10 @@ function renderDailyOverview(){
   // 排便
   const todayPoops = poops.filter(p=>p.date===todayStr());
   const todayDiapers = diapers.filter(d=>d.date===todayStr());
+  const pRef = poopRefFor(day);
   $('dailyPoopCount').textContent = todayPoops.length;
   $('dailyDiaperCount').textContent = todayDiapers.length + ' 次';
-  $('dailyPoopRef').textContent = `参考 ${POOP_REF.min}-${POOP_REF.max} 次`;
+  $('dailyPoopRef').textContent = `参考 ${pRef.min}-${pRef.max} 次`;
   // 健康
   const todayHealths = healths.filter(h=>h.date===todayStr());
   const latestH = todayHealths[todayHealths.length-1];
@@ -1254,8 +1349,11 @@ function renderMilk(){
   $('milkRefSub').textContent = `出生第${day}天 · ${ref.freq}`;
 
   const todayFeeds = feeds.filter(f=>f.date===todayStr());
-  const total = todayFeeds.reduce((s,f)=>s+f.amount,0);
+  const total = todayFeeds.filter(f=>f.type!=='母乳').reduce((s,f)=>s+f.amount,0);
+  const bmFeeds = todayFeeds.filter(f=>f.type==='母乳');
+  const bmTotalMin = bmFeeds.reduce((s,f)=>s+parseInt(f.duration||0),0);
   $('milkTotal').textContent = total;
+  $('milkBmDuration').textContent = bmFeeds.length ? `${bmFeeds.length}次 · 共${bmTotalMin}min` : '—';
   // 参考量取总量的上限数字
   const refNum = parseInt(ref.total.match(/\d+/g)?.pop() || 800);
   const pct = Math.min(100, total/refNum*100);
@@ -1279,32 +1377,62 @@ function renderMilk(){
   $('milkDetailSub').textContent = todayFeeds.length + ' 条记录';
   const list = $('milkList');
   if(!todayFeeds.length) list.innerHTML = '<div class="empty">今日暂无记录<button class="empty-add" onclick="openAddFeed(\''+curTimeStr()+'\')">+ 添加喂养</button></div>';
-  else list.innerHTML = todayFeeds.map(f=>`
+  else list.innerHTML = todayFeeds.map(f=>{
+    const isBM = f.type==='母乳';
+    const detail = isBM ? `${f.side||'—'} · ${f.duration||0}min` : `${f.amount}ml`;
+    return `
     <div class="item">
-      <div class="left-icon" style="background:${f.type==='母乳'?'#f4b5b5':'#b8c8e0'}"><svg viewBox="0 0 24 24"><path d="M6 3h12v2h-1v15a2 2 0 01-2 2H9a2 2 0 01-2-2V5H6V3z"/></svg></div>
+      <div class="left-icon" style="background:${isBM?'#f4b5b5':'#b8c8e0'}"><svg viewBox="0 0 24 24"><path d="M6 3h12v2h-1v15a2 2 0 01-2 2H9a2 2 0 01-2-2V5H6V3z"/></svg></div>
       <div class="body">
-        <div class="top"><span class="time">${f.time}</span><span class="sep">·</span><span class="type">${f.type}</span><span class="sep">·</span><span class="type">${f.amount}ml</span></div>
+        <div class="top"><span class="time">${f.time}</span><span class="sep">·</span><span class="type">${f.type}</span><span class="sep">·</span><span class="type">${detail}</span></div>
         ${f.note?`<div class="meta">${f.note}</div>`:''}
       </div>
       ${editBtn(`openEditFeed(${f.id})`)}${delBtn(`delFeed(${f.id})`)}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function openAddFeed(t){
   openModal('添加喂养记录', [
     {key:'time', label:'时间', type:'time', value:t},
     {key:'type', label:'类型', type:'select', value:'母乳', options:[{value:'母乳',label:'母乳'},{value:'奶粉',label:'奶粉'},{value:'混合',label:'混合'}]},
-    {key:'amount', label:'奶量(ml)', type:'number', placeholder:'如 30'},
-    {key:'note', label:'备注', placeholder:'如 左10min 右10min'}
-  ], d=>{ if(!d.amount) return; feeds.push({id:genId(),time:d.time,type:d.type,amount:parseInt(d.amount),note:d.note,date:todayStr()}); feeds.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('feeds',feeds); renderMilk(); renderDailyMilk(); renderDailyOverview(); });
+    {key:'amount', label:'奶量(ml)', type:'number', placeholder:'如 30', showIf:{key:'type', val:'奶粉'}},
+    {key:'amountMix', label:'奶量(ml)', type:'number', placeholder:'如 30', showIf:{key:'type', val:'混合'}},
+    {key:'side', label:'喂养侧', type:'select', value:'双侧', options:[{value:'左侧',label:'左侧'},{value:'右侧',label:'右侧'},{value:'双侧',label:'双侧'}], showIf:{key:'type', val:'母乳'}},
+    {key:'duration', label:'喂养时长(分钟)', type:'number', placeholder:'如 15', showIf:{key:'type', val:'母乳'}},
+    {key:'note', label:'备注', placeholder:'如 吃完后安睡'}
+  ], d=>{
+    const type = d.type;
+    if(type==='母乳'){
+      if(!d.duration) return;
+      feeds.push({id:genId(),time:d.time,type:type,amount:0,side:d.side,duration:parseInt(d.duration),note:d.note,date:todayStr()});
+    } else {
+      const amt = type==='奶粉' ? parseInt(d.amount) : parseInt(d.amountMix);
+      if(!amt) return;
+      feeds.push({id:genId(),time:d.time,type:type,amount:amt,side:'',duration:0,note:d.note,date:todayStr()});
+    }
+    feeds.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('feeds',feeds); renderMilk(); renderDailyMilk(); renderDailyOverview();
+  });
 }
 function openEditFeed(id){
   const f=feeds.find(x=>x.id===id); if(!f) return;
   openModal('编辑喂养记录', [
     {key:'time', label:'时间', type:'time', value:f.time},
     {key:'type', label:'类型', type:'select', value:f.type, options:[{value:'母乳',label:'母乳'},{value:'奶粉',label:'奶粉'},{value:'混合',label:'混合'}]},
-    {key:'amount', label:'奶量(ml)', type:'number', value:f.amount},
+    {key:'amount', label:'奶量(ml)', type:'number', value:f.amount, showIf:{key:'type', val:'奶粉'}},
+    {key:'amountMix', label:'奶量(ml)', type:'number', value:f.amount, showIf:{key:'type', val:'混合'}},
+    {key:'side', label:'喂养侧', type:'select', value:f.side||'双侧', options:[{value:'左侧',label:'左侧'},{value:'右侧',label:'右侧'},{value:'双侧',label:'双侧'}], showIf:{key:'type', val:'母乳'}},
+    {key:'duration', label:'喂养时长(分钟)', type:'number', value:f.duration||'', showIf:{key:'type', val:'母乳'}},
     {key:'note', label:'备注', value:f.note||''}
-  ], d=>{ f.time=d.time; f.type=d.type; f.amount=parseInt(d.amount); f.note=d.note; feeds.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('feeds',feeds); renderMilk(); renderDailyMilk(); });
+  ], d=>{
+    f.time=d.time; f.type=d.type; f.note=d.note;
+    if(d.type==='母乳'){
+      f.amount=0; f.side=d.side; f.duration=parseInt(d.duration)||0;
+    } else {
+      f.amount = d.type==='奶粉' ? parseInt(d.amount) : parseInt(d.amountMix);
+      f.side=''; f.duration=0;
+    }
+    feeds.sort((a,b)=>a.time.localeCompare(b.time)); saveJSON('feeds',feeds); renderMilk(); renderDailyMilk();
+  });
 }
 function delFeed(id){ if(!confirm('删除该记录？')) return; feeds=feeds.filter(f=>f.id!==id); saveJSON('feeds',feeds); renderMilk(); renderDailyMilk(); renderDailyOverview(); }
 
@@ -1315,16 +1443,26 @@ function renderPoop(){
   const day = dayOffset();
   const todayPoops = poops.filter(p=>p.date===todayStr());
   const todayDiapers = diapers.filter(d=>d.date===todayStr());
+  const pRef = poopRefFor(day);
   $('poopCount').textContent = todayPoops.length;
   $('diaperCount').textContent = todayDiapers.length + ' 次';
   const totalG = todayPoops.reduce((s,p)=>s+(p.amount||0),0);
   $('poopTotal').textContent = totalG ? totalG+' g(估)' : '—';
-  $('poopRef').textContent = `${POOP_REF.min}-${POOP_REF.max} 次/日`;
+  $('poopRef').textContent = `${pRef.min}-${pRef.max} 次/日 · ${pRef.desc}`;
 
   const tag = $('poopTag');
-  if(todayPoops.length > POOP_REF.max) { tag.textContent='偏多'; tag.className='tag tag-warn'; }
-  else if(todayPoops.length>0 && todayPoops.length < POOP_REF.min) { tag.textContent='偏少'; tag.className='tag tag-warn'; }
+  if(todayPoops.length > pRef.max) { tag.textContent='偏多'; tag.className='tag tag-warn'; }
+  else if(todayPoops.length>0 && todayPoops.length < pRef.min) { tag.textContent='偏少'; tag.className='tag tag-warn'; }
   else { tag.textContent='正常'; tag.className='tag tag-ok'; }
+
+  // 国家参考（按日龄动态）
+  $('poopRefSub').textContent = `出生第${day}天 · ${pRef.desc}`;
+  $('poopRefRows').innerHTML = `
+    <div class="ref-row"><span class="k">当前阶段</span><span class="v">${pRef.desc}<small>${pRef.note}</small></span></div>
+    <div class="ref-row"><span class="k">参考次数</span><span class="v">${pRef.min}-${pRef.max} 次/日</span></div>
+    <div class="ref-row"><span class="k">母乳便</span><span class="v">2-5 次/日<small>金黄糊状</small></span></div>
+    <div class="ref-row"><span class="k">奶粉便</span><span class="v">1-3 次/日<small>淡黄成形</small></span></div>
+    <div class="ref-row"><span class="k">纸尿裤更换</span><span class="v">每日 6-8 次或按需</span></div>`;
 
   // 颜色记录
   const colorList = $('poopColorList');
@@ -1409,22 +1547,44 @@ function renderSleep(){
     ${editBtn(`openEditSleep(${s.id})`)}${delBtn(`delSleep(${s.id})`)}
   </div>`).join('');
 }
+function calcSleepHours(start, end){
+  if(!start || !end) return '';
+  // 支持跨夜：若 end <= start，则认为跨过午夜
+  let [sh, sm] = start.split(':').map(Number);
+  let [eh, em] = end.split(':').map(Number);
+  let mins = (eh*60+em) - (sh*60+sm);
+  if(mins < 0) mins += 24*60; // 跨夜
+  if(mins === 0) return '';
+  return (mins/60).toFixed(1);
+}
+function bindSleepAutoCalc(){
+  const startEl = $('f_start'), endEl = $('f_end'), hoursEl = $('f_hours');
+  if(!startEl || !endEl || !hoursEl) return;
+  const update = () => {
+    const h = calcSleepHours(startEl.value, endEl.value);
+    if(h) { hoursEl.value = h; }
+  };
+  startEl.addEventListener('input', update);
+  endEl.addEventListener('input', update);
+}
 function openAddSleep(t){
   openModal('添加睡眠记录', [
     {key:'start', label:'入睡时间', type:'time', value:t},
     {key:'end', label:'醒来时间', type:'time'},
-    {key:'hours', label:'时长(小时)', type:'number', step:'0.1', placeholder:'如 2.5'},
+    {key:'hours', label:'时长(小时, 自动计算)', type:'number', step:'0.1', placeholder:'选择时间自动计算'},
     {key:'note', label:'备注', placeholder:'如 安稳/哭闹'}
-  ], d=>{ if(!d.hours) return; sleeps.push({id:genId(),start:d.start,end:d.end,hours:parseFloat(d.hours),note:d.note,date:todayStr()}); sleeps.sort((a,b)=>a.start.localeCompare(b.start)); saveJSON('sleeps',sleeps); renderSleep(); renderDailyOverview(); });
+  ], d=>{ if(!d.hours && !d.start) return; const h = parseFloat(d.hours) || parseFloat(calcSleepHours(d.start,d.end)) || 0; if(!h) return; sleeps.push({id:genId(),start:d.start,end:d.end,hours:h,note:d.note,date:todayStr()}); sleeps.sort((a,b)=>a.start.localeCompare(b.start)); saveJSON('sleeps',sleeps); renderSleep(); renderDailyOverview(); });
+  bindSleepAutoCalc();
 }
 function openEditSleep(id){
   const s=sleeps.find(x=>x.id===id); if(!s) return;
   openModal('编辑睡眠记录', [
     {key:'start', label:'入睡时间', type:'time', value:s.start},
     {key:'end', label:'醒来时间', type:'time', value:s.end||''},
-    {key:'hours', label:'时长(小时)', type:'number', step:'0.1', value:s.hours},
+    {key:'hours', label:'时长(小时, 自动计算)', type:'number', step:'0.1', value:s.hours},
     {key:'note', label:'备注', value:s.note||''}
-  ], d=>{ s.start=d.start; s.end=d.end; s.hours=parseFloat(d.hours); s.note=d.note; sleeps.sort((a,b)=>a.start.localeCompare(b.start)); saveJSON('sleeps',sleeps); renderSleep(); });
+  ], d=>{ s.start=d.start; s.end=d.end; s.hours=parseFloat(d.hours)||parseFloat(calcSleepHours(d.start,d.end))||0; s.note=d.note; sleeps.sort((a,b)=>a.start.localeCompare(b.start)); saveJSON('sleeps',sleeps); renderSleep(); });
+  bindSleepAutoCalc();
 }
 function delSleep(id){ if(!confirm('删除该记录？')) return; sleeps=sleeps.filter(s=>s.id!==id); saveJSON('sleeps',sleeps); renderSleep(); renderDailyOverview(); }
 
